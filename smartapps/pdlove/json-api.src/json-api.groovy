@@ -51,19 +51,18 @@ def copyConfig() {
     dynamicPage(name: "copyConfig", title: "Config", install:true) {
         section("Select devices to include in the /devices API call") {
             input "switches", "capability.switch", title: "Switches", multiple: true, required: false
-            input "switches", "capability.switch", title: "Switches", multiple: true, required: false
             input "hues", "capability.colorControl", title: "Hues", multiple: true, required: false
             input "thermostats", "capability.thermostat", title: "Thermostats", multiple: true, required: false
-			input "motion", "capability.motionSensor", title: "Motion Here", multiple: true, required: false
+            input "motion", "capability.motionSensor", title: "Motion Here", multiple: true, required: false
         }
 
         section() {
             paragraph "View this SmartApp's configuration to use it in other places."
-            href url:"https://graph.api.smartthings.com/api/smartapps/installations/${app.id}/config?access_token=${state.accessToken}", style:"embedded", required:false, title:"Config", description:"Tap, select, copy, then click \"Done\""
+            href url:"${apiServerUrl("/api/smartapps/installations/${app.id}/config?access_token=${state.accessToken}")}", style:"embedded", required:false, title:"Config", description:"Tap, select, copy, then click \"Done\""
         }
 
         section() {
-            href url:"https://graph.api.smartthings.com/api/smartapps/installations/${app.id}/devices?access_token=${state.accessToken}", style:"embedded", required:false, title:"Debug", description:"View accessories JSON"
+            href url:"${apiServerUrl("/api/smartapps/installations/${app.id}/devices?access_token=${state.accessToken}")}", style:"embedded", required:false, title:"Debug", description:"View accessories JSON"
         }
     }
 }
@@ -98,7 +97,7 @@ def renderLocation() {
 
 def deviceCommandMap(device, type) {
   device.supportedCommands.collectEntries { command->
-      def commandUrl = "https://graph.api.smartthings.com/api/smartapps/installations/${app.id}/${type}/${device.id}/command/${command.name}?access_token=${state.accessToken}"
+      def commandUrl = "${apiServerUrl("/api/smartapps/installations/${app.id}/${type}/${device.id}/command/${command.name}?access_token=${state.accessToken}")}"
       [
         (command.name): commandUrl
       ]
@@ -107,7 +106,7 @@ def deviceCommandMap(device, type) {
 
 def deviceAttributeMap(device, type) {
   device.supportedAttributes.collectEntries { attribute->
-    def attributeUrl = "https://graph.api.smartthings.com/api/smartapps/installations/${app.id}/${type}/${device.id}/attribute/${attribute.name}?access_token=${state.accessToken}"
+    def attributeUrl = "${apiServerUrl("/api/smartapps/installations/${app.id}/${type}/${device.id}/attribute/${attribute.name}?access_token=${state.accessToken}")}"
 
     [
       (attribute.name): attributeUrl
