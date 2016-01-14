@@ -51,10 +51,9 @@ def copyConfig() {
     dynamicPage(name: "copyConfig", title: "Config", install:true) {
         section("Select devices to include in the /devices API call") {
             input "switches", "capability.switch", title: "Switches", multiple: true, required: false
-            input "switches", "capability.switch", title: "Switches", multiple: true, required: false
             input "hues", "capability.colorControl", title: "Hues", multiple: true, required: false
             input "thermostats", "capability.thermostat", title: "Thermostats", multiple: true, required: false
-			input "motion", "capability.motionSensor", title: "Motion Here", multiple: true, required: false
+            input "motion", "capability.motionSensor", title: "Motion Here", multiple: true, required: false
         }
 
         section() {
