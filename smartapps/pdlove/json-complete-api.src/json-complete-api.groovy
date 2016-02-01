@@ -38,6 +38,10 @@ def copyConfig() {
         	paragraph "View the JSON generated from the installed devices."
             href url:"${apiServerUrl("/api/smartapps/installations/${app.id}/devices?access_token=${state.accessToken}")}", style:"embedded", required:false, title:"Device Results", description:"View accessories JSON"
         }
+        section() {
+        	paragraph "Test."
+            href url:"${apiServerUrl("/api/smartapps/installations/${app.id}/caccec95-e187-4b06-b686-7761468b8f08/command/on?access_token=${state.accessToken}")}", style:"embedded", required:false, title:"Device Results", description:"View accessories JSON"
+        }
     }
 }
 
@@ -89,23 +93,47 @@ def authorizedDevices() {
     ]
 }
 
+def CommandReply(statusOut, messageOut) {
+	def replyData = 
+    	[
+        	status: statusOut,
+            message: messageOut
+        ]
+        
+    def replyJson    = new groovy.json.JsonOutput().toJson(replyData)
+    render contentType: "application/json", data: replyJson  
+}
+
 def deviceCommand() {
+  log.info("Command Request")
   def device  = deviceList.find { it.id == params.id }
   def command = params.command
   if (!device) {
-      httpError(404, "Device not found")
+  	  log.error("Device Not Found")
+      CommandReply("Failure", "Device Not Found")
+  } else if (!device.hasCommand(command)) {
+      log.error("Device "+device.displayName+" does not have the command "+command)
+      CommandReply("Failure", "Device "+device.displayName+" does not have the command "+command)
   } else {
       def value1 = request.JSON?.value1
       def value2 = request.JSON?.value2
-      if (value2) {
-        device."$command"(value1,value2)
-      } else if (value1) {
-        device."$command"(value1)
-      } else {
-        device."$command"()
+      try {
+      	if (value2) {
+	        device."$command"(value1,value2)
+	    } else if (value1) {
+	    	device."$command"(value1)
+	    } else {
+	    	device."$command"()
+	    }
+        log.info("Command Successful for Device "+device.displayName+", Command "+command)
+        CommandReply("Success", "Device "+device.displayName+", Command "+command)
+      } catch (e) {
+      	log.error("Error Occurred For Device "+device.displayName+", Command "+command)
+ 	    CommandReply("Failure", "Error Occurred For Device "+device.displayName+", Command "+command)
       }
   }
 }
+
 
 def deviceAttribute() {
   def device    = deviceList.find { it.id == params.id }
@@ -185,13 +213,13 @@ mappings {
         path("/devices")                        { action: [GET: "authError"] }
         path("/config")                         { action: [GET: "authError"] }
         path("/location")                       { action: [GET: "authError"] }
-        path("/:id/command/:command")     		{ action: [PUT: "authError"] }
+        path("/:id/command/:command")     		{ action: [POST: "authError"] }
         path("/:id/attribute/:attribute") 		{ action: [GET: "authError"] }
     } else {
         path("/devices")                        { action: [GET: "renderDevices"] }
         path("/config")                         { action: [GET: "renderConfig"]  }
         path("/location")                       { action: [GET: "renderLocation"] }
-        path("/:id/command/:command")     		{ action: [PUT: "deviceCommand"] }
+        path("/:id/command/:command")     		{ action: [POST: "deviceCommand"] }
         path("/:id/query")						{ action: [GET: "deviceQuery"] }	
         path("/:id/attribute/:attribute") 		{ action: [GET: "deviceAttribute"] }
     }
