@@ -25,6 +25,26 @@ This plugin will NOT work with the original "JSON API" due to a lack of features
 
 ### Homebridge Installation
 
-This will be covered when I get the plugin for Homebridge Uploaded
+Coming Soon. Right now if you know how to install this, you're someone who should be using it at this point.
 
-## Notes on the API
+### Config.json example
+
+	{
+		"platform": "SmartThings",
+    	"name": "SmartThings",
+        "app_url": "https://graph.api.smartthings.com:443/api/smartapps/installations/",
+        "app_id": "THIS-SHOULD-BE-YOUR-APPID",
+        "access_token": "THIS-SHOULD-BE-YOUR-TOKEN"
+	} 
+
+To get this information, open SmartThings on your phone, goto "My Home">"SmartApps">"JSON Complete API" and tap on Config
+
+##Reporting Devices for Development
+
+* The first step is to install the smartapp to the device
+ * This is done by opening SmartThings on your phone and going to "My Home">"SmartApps">"JSON Complete API". Tap all devices and make sure it is enabled in the list.
+ * If you cannot find the device in this list, please submit an Issue on Github with the make/model of the device. More information will be needed, but that will be a good start.
+* The next step is to start Homebridge and watch the first part of the initialization where it says "Device Added"/"Device Skipped"
+ * If it says "Device Skipped", copy/paste that entire line to an Issue on Github. It supplies all the information needed to get the device up an working if HomeKit can support it.
+ * If it says "Device Added" then the device should appear in HomeKit. If specific function is missing, post the Device Added line and identify what you are missing from it.
+* If a large number of similar devices are Skipped or missing functionality, it may just be a Capability that is missing. If so, it will be listed in the "Unknown Capabilities" line item.
