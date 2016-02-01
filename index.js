@@ -54,9 +54,13 @@ SmartThingsPlatform.prototype = {
 					accessory = new SmartThingsAccessory(that, device);
 
 					if (accessory != undefined) {
-						that.log("Device Added - Group " + accessory.deviceGroup + ", ID " + accessory.deviceid + ", Name " + accessory.name);
-						that.deviceLookup.push(accessory);
-						foundAccessories.push(accessory);
+						if ((accessory.services.length<=1)||(accessory.deviceGroup=="unknown")) {
+							that.log("Device Skipped - Group " + accessory.deviceGroup + ", Name " + accessory.name+ ", ID " + accessory.deviceid);
+						} else {
+							that.log("Device Added - Group " + accessory.deviceGroup + ", Name " + accessory.name + ", ID " + accessory.deviceid);
+							that.deviceLookup.push(accessory);
+							foundAccessories.push(accessory);
+						}
 					}
 				}
 				refreshLoop();
