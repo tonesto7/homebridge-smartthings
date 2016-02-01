@@ -17,9 +17,28 @@ definition(
 
 
 preferences {
-	section("Title") {
-        input "deviceList", "capability.refresh", title: "All Devices", multiple: true, required: false
-	}
+    page(name: "copyConfig")
+}
+
+def copyConfig() {
+    if (!state.accessToken) {
+        createAccessToken()
+    }
+    dynamicPage(name: "copyConfig", title: "Config", install:true) {
+        section("Select devices to include in the /devices API call") {
+            input "deviceList", "capability.refresh", title: "All Devices", multiple: true, required: false
+        }
+
+        section() {
+            paragraph "View this SmartApp's configuration to use it in other places."
+            href url:"${apiServerUrl("/api/smartapps/installations/${app.id}/config?access_token=${state.accessToken}")}", style:"embedded", required:false, title:"Config", description:"Tap, select, copy, then click \"Done\""
+        }
+
+        section() {
+        	paragraph "View the JSON generated from the installed devices."
+            href url:"${apiServerUrl("/api/smartapps/installations/${app.id}/devices?access_token=${state.accessToken}")}", style:"embedded", required:false, title:"Device Results", description:"View accessories JSON"
+        }
+    }
 }
 
 def installed() {
@@ -53,7 +72,8 @@ def renderConfig() {
             [
                 platform: "SmartThings",
                 name: "SmartThings",
-                app_url: apiServerUrl("/api/smartapps/installations/${app.id}/"),
+                app_url: apiServerUrl("/api/smartapps/installations/"),
+                app_id: app.id,
                 access_token:  state.accessToken
             ]
         ],
@@ -118,7 +138,7 @@ def deviceCapabilityList(device) {
   def i=0
   device.capabilities.collectEntries { capability->
     [
-      (i++):(capability.name)
+      (capability.name):1
     ]
   }
 }
@@ -127,7 +147,7 @@ def deviceCommandList(device) {
   def i=0
   device.supportedCommands.collectEntries { command->
     [
-      (i++): (command.name)
+      (command.name): (command.arguments)
     ]
   }
 }
@@ -173,4 +193,3 @@ mappings {
         path("/:id/attribute/:attribute") 		{ action: [GET: "deviceAttribute"] }
     }
 }
-
