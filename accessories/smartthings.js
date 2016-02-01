@@ -36,6 +36,13 @@ function SmartThingsAccessory(platform, device) {
 	Accessory.call(this, this.name, id);
 	var that = this;
 
+	//Get the Capabilities List
+	for(var index in device.capabilities) {
+		if ((platform.knownCapabilities.indexOf(index)==-1) && (platform.unknownCapabilities.indexOf(index)==-1))
+			platform.unknownCapabilities.push(index);
+	}
+
+
 	this.deviceGroup = "unknown"; //This way we can easily tell if we set a device group
 
 	if (device.capabilities["Switch Level"] !== undefined) {

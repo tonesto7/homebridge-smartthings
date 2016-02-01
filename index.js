@@ -35,12 +35,15 @@ SmartThingsPlatform.prototype = {
 		}
 	},
 	accessories: function (callback) {
-		this.log("Fetching Sensibo devices.");
-
+		this.log("Fetching Smart Things devices.");
+		
 		var that = this;
 		var foundAccessories = [];
 		this.deviceLookup = [];
-
+		this.unknownCapabilities = [];
+		this.knownCapabilities = ["Switch","Color Control","Battery","Polling","Lock","Refresh","Lock Codes","Sensor","Actuator",
+									"Configuration","Switch Level","Temperature Measurement","Motion Sensor","Color Temperature",
+									"Contact Sensor","Three Axis","Acceleration Sensor","Momentary","Door Control","Garage Door Control"];
 		var refreshLoop = function () {
 			setInterval(that.reloadData.bind(that), 30000);
 		};
@@ -55,15 +58,16 @@ SmartThingsPlatform.prototype = {
 
 					if (accessory != undefined) {
 						if ((accessory.services.length<=1)||(accessory.deviceGroup=="unknown")) {
-							that.log("Device Skipped - Group " + accessory.deviceGroup + ", Name " + accessory.name+ ", ID " + accessory.deviceid);
+							that.log("Device Skipped - Group " + accessory.deviceGroup + ", Name " + accessory.name+ ", ID " + accessory.deviceid+", JSON: "+ JSON.stringify(device));
 						} else {
-							that.log("Device Added - Group " + accessory.deviceGroup + ", Name " + accessory.name + ", ID " + accessory.deviceid);
+							that.log("Device Added - Group " + accessory.deviceGroup + ", Name " + accessory.name + ", ID " + accessory.deviceid+", JSON: "+ JSON.stringify(device));
 							that.deviceLookup.push(accessory);
 							foundAccessories.push(accessory);
 						}
 					}
 				}
 				refreshLoop();
+				that.log("Unknown Capabilities: " + JSON.stringify(that.unknownCapabilities));
 				callback(foundAccessories);
 		});
 	}
