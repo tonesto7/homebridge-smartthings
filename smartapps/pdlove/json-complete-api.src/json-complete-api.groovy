@@ -24,7 +24,7 @@ def copyConfig() {
     if (!state.accessToken) {
         createAccessToken()
     }
-    dynamicPage(name: "copyConfig", title: "Config", install:true) {
+    dynamicPage(name: "copyConfig", title: "Config", install:true, uninstall:true) {
         section("Select devices to include in the /devices API call") {
             input "deviceList", "capability.refresh", title: "All Devices", multiple: true, required: false
         }
@@ -37,10 +37,6 @@ def copyConfig() {
         section() {
         	paragraph "View the JSON generated from the installed devices."
             href url:"${apiServerUrl("/api/smartapps/installations/${app.id}/devices?access_token=${state.accessToken}")}", style:"embedded", required:false, title:"Device Results", description:"View accessories JSON"
-        }
-        section() {
-        	paragraph "Test."
-            href url:"${apiServerUrl("/api/smartapps/installations/${app.id}/caccec95-e187-4b06-b686-7761468b8f08/command/on?access_token=${state.accessToken}")}", style:"embedded", required:false, title:"Device Results", description:"View accessories JSON"
         }
     }
 }
