@@ -10,12 +10,17 @@ Installation comes in two parts:
 A custom JSON API has been written to interface with Smartthings. If you have any other than the one called "" then you need to install the new one.
 This plugin will NOT work with the original "JSON API" due to a lack of features.
 
+If you installed the previous update that doesn't allow selecting devices, you need to goto "My Locations" and then "List Smartapps" to remove the multiple installation.
+
 * Log into your SmartThings account at https://graph.api.smartthings.com/
 * Goto "My SmartApps"
 * Click on Settings and add the repository with Owner of "pdlove" and name of "homebridge-smartthings" and branch of "master" and then click save.
 * Click "Update From Repo" and select "homebridge-smartthings"
 * You should have json-complete-api in the New section. Check it, check Publish at the bottom and click "Execute Update".
 
+* Click on the app in the list and then click "App Settings"
+* Scroll down to the OAuth section and click "Enable OAuth in Smartapp"
+* Select "Update" at the bottom.
 
 * In the SmartThings App, goto "Marketplace" and select "SmartApps". At the bottom of the list, select "My Apps"
 * Select "JSON Complete API" from the list.
