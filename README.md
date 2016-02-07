@@ -30,7 +30,9 @@ If you installed the previous update that doesn't allow selecting devices, you n
 
 ### Homebridge Installation
 
-Coming Soon. Right now if you know how to install this, you're someone who should be using it at this point.
+1. Install homebridge using: npm install -g homebridge
+2. Install this plugin using: npm install -g homebridge-smartthings
+3. Update your configuration file. See sample config.json snippet below. 
 
 ### Config.json example
 
