@@ -26,9 +26,9 @@ def copyConfig() {
     }
     dynamicPage(name: "copyConfig", title: "Config", install:true, uninstall:true) {
         section("Select devices to include in the /devices API call") {
-            input "deviceList", "capability.refresh", title: "All Devices", multiple: true, required: false
+            input "deviceList", "capability.refresh", title: "Most Devices", multiple: true, required: false
+            input "sensorList", "capability.sensor", title: "Sensor Devices", multiple: true, required: false
         }
-
         section() {
             paragraph "View this SmartApp's configuration to use it in other places."
             href url:"${apiServerUrl("/api/smartapps/installations/${app.id}/config?access_token=${state.accessToken}")}", style:"embedded", required:false, title:"Config", description:"Tap, select, copy, then click \"Done\""
@@ -83,9 +83,20 @@ def renderConfig() {
     render contentType: "text/plain", data: configString
 }
 
+def renderLocation() {
+  [
+    latitude: location.latitude,
+    longitude: location.longitude,
+    mode: location.mode,
+    name: location.name,
+    temperature_scale: location.temperatureScale,
+    zip_code: location.zipCode
+  ]
+}
 def authorizedDevices() {
     [
-        deviceList: deviceList
+        deviceList: deviceList,
+        sensorList: sensorList
     ]
 }
 
@@ -186,11 +197,20 @@ def deviceAttributeList(device) {
     ]
   }
 }
+
+def getAllData() {
+	def deviceData =
+    [	location: renderLocation(),
+        deviceList: renderDevices(deviceList),
+        sensorList: renderDevices(sensorList)
+    ]
+    def deviceJson    = new groovy.json.JsonOutput().toJson(deviceData)
+    render contentType: "application/json", data: deviceJson
+}
         	
-def renderDevices() {
-    def deviceData = authorizedDevices().collectEntries { devices->
-        [
-            (devices.key): devices.value.collect { device->
+def renderDevices(myList) {
+    def deviceData =  
+        myList.collect { device->
                 [
                     name: device.displayName,
             		deviceid: device.id,
@@ -199,10 +219,6 @@ def renderDevices() {
             		attributes: deviceAttributeList(device)
                 ]
             }
-        ]
-    }
-    def deviceJson    = new groovy.json.JsonOutput().toJson(deviceData)
-    render contentType: "application/json", data: deviceJson
 }
 mappings {
     if (!params.access_token || (params.access_token && params.access_token != state.accessToken)) {
@@ -212,7 +228,7 @@ mappings {
         path("/:id/command/:command")     		{ action: [POST: "authError"] }
         path("/:id/attribute/:attribute") 		{ action: [GET: "authError"] }
     } else {
-        path("/devices")                        { action: [GET: "renderDevices"] }
+        path("/devices")                        { action: [GET: "getAllData"] }
         path("/config")                         { action: [GET: "renderConfig"]  }
         path("/location")                       { action: [GET: "renderLocation"] }
         path("/:id/command/:command")     		{ action: [POST: "deviceCommand"] }
