@@ -101,14 +101,14 @@ def authorizedDevices() {
 }
 
 def CommandReply(statusOut, messageOut) {
-	def replyData = 
+	def replyData =
     	[
         	status: statusOut,
             message: messageOut
         ]
-        
+
     def replyJson    = new groovy.json.JsonOutput().toJson(replyData)
-    render contentType: "application/json", data: replyJson  
+    render contentType: "application/json", data: replyJson
 }
 
 def deviceCommand() {
@@ -158,17 +158,17 @@ def deviceQuery() {
   if (!device) {
       httpError(404, "Device not found")
   } else {
- 	def deviceData = 
+ 	def deviceData =
                 [
                     name: device.displayName,
             		deviceid: device.id,
             		capabilities: deviceCapabilityList(device),
             		commands: deviceCommandList(device),
             		attributes: deviceAttributeList(device)
-                ]       
-    
+                ]
+
     def deviceJson    = new groovy.json.JsonOutput().toJson(deviceData)
-    render contentType: "application/json", data: deviceJson  
+    render contentType: "application/json", data: deviceJson
     }
 }
 
@@ -192,9 +192,15 @@ def deviceCommandList(device) {
 
 def deviceAttributeList(device) {
   device.supportedAttributes.collectEntries { attribute->
-    [
-      (attribute.name): device.currentValue(attribute.name)
-    ]
+    try {
+      [
+        (attribute.name): device.currentValue(attribute.name)
+      ]
+    } catch(e) {
+      [
+        (attribute.name): null
+      ]
+    }
   }
 }
 
@@ -207,9 +213,9 @@ def getAllData() {
     def deviceJson    = new groovy.json.JsonOutput().toJson(deviceData)
     render contentType: "application/json", data: deviceJson
 }
-        	
+
 def renderDevices(myList) {
-    def deviceData =  
+    def deviceData =
         myList.collect { device->
                 [
                     name: device.displayName,
@@ -232,7 +238,7 @@ mappings {
         path("/config")                         { action: [GET: "renderConfig"]  }
         path("/location")                       { action: [GET: "renderLocation"] }
         path("/:id/command/:command")     		{ action: [POST: "deviceCommand"] }
-        path("/:id/query")						{ action: [GET: "deviceQuery"] }	
+        path("/:id/query")						{ action: [GET: "deviceQuery"] }
         path("/:id/attribute/:attribute") 		{ action: [GET: "deviceAttribute"] }
     }
 }
