@@ -37,7 +37,7 @@ If you installed the previous update that doesn't allow selecting devices, you n
 ### Config.json example
 
 	{
-		"platform": "SmartThings",
+	"platform": "homebridge-smartthings.SmartThings",
     	"name": "SmartThings",
         "app_url": "https://graph.api.smartthings.com:443/api/smartapps/installations/",
         "app_id": "THIS-SHOULD-BE-YOUR-APPID",
