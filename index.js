@@ -21,6 +21,8 @@ function SmartThingsPlatform(log, config) {
 	this.app_id = config["app_id"];
 	this.access_token = config["access_token"];
 	
+    this.polling_seconds = config["polling_seconds"];
+	if (!this.polling_seconds) this.polling_seconds=10;
 	this.api = smartthings;
 	this.log = log;
 	this.deviceLookup = {};
@@ -32,6 +34,7 @@ SmartThingsPlatform.prototype = {
 		var foundAccessories = [];
 		smartthings.getDevices(function (myList) {
 				// success
+            if (myList && myList.deviceList && myList.deviceList instanceof Array) {
 			var populateDevices = function(devices) {
 				for (var i = 0; i < devices.length; i++) {
 					var device = devices[i];
@@ -64,6 +67,10 @@ SmartThingsPlatform.prototype = {
 			if (myList.sensorList && myList.sensorList instanceof Array) {
 				populateDevices(myList.sensorList);
 			}
+            } else if (myList.error) {
+                that.log ("Error received type " + myList.type+' - '+myList.message)
+            } else { 
+                that.log ("Invalid Reponse from API call")}
 			if (callback)
 				callback(foundAccessories)
 		});
@@ -80,14 +87,13 @@ SmartThingsPlatform.prototype = {
 									"Contact Sensor","Three Axis","Acceleration Sensor","Momentary","Door Control","Garage Door Control",
 									"Relative Humidity Measurement","Presence Sensor","Thermostat"];
 		this.temperature_unit = 'F';
-		this.refresh_seconds = 10;
 		
 		smartthings.init(this.app_url, this.app_id, this.access_token);
 		
 		this.reloadData(function(foundAccessories) { 
 			that.log("Unknown Capabilities: " + JSON.stringify(that.unknownCapabilities));
 			callback(foundAccessories);
-			setInterval(that.reloadData.bind(that), that.refresh_seconds*1000);
+			setInterval(that.reloadData.bind(that), that.polling_seconds*1000);
 		 });
 	}
 		

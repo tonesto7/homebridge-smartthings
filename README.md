@@ -37,14 +37,16 @@ If you installed the previous update that doesn't allow selecting devices, you n
 ### Config.json example
 
 	{
-	"platform": "homebridge-smartthings.SmartThings",
+	   "platform": "homebridge-smartthings.SmartThings",
     	"name": "SmartThings",
         "app_url": "https://graph.api.smartthings.com:443/api/smartapps/installations/",
         "app_id": "THIS-SHOULD-BE-YOUR-APPID",
-        "access_token": "THIS-SHOULD-BE-YOUR-TOKEN"
+        "access_token": "THIS-SHOULD-BE-YOUR-TOKEN",
+        "polling_seconds": 10
 	} 
 
 To get this information, open SmartThings on your phone, goto "My Home">"SmartApps">"JSON Complete API" and tap on Config
+polling_seconds is optional and defaults to 10. Smartthings can produce Rate Limit errors less than 5 seconds.
 
 ##Reporting Devices for Development
 
