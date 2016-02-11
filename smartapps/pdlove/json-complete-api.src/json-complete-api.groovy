@@ -165,11 +165,11 @@ def deviceQuery() {
   	def result
     
   	if (device) {
-    	log.debug "DeviceQuery (device): $device"
+    	//log.debug "DeviceQuery (device): $device"
  		result = device
     } 
     else if (sensor) {
-    	log.debug "DeviceQuery (sensor): $sensor"
+    	//log.debug "DeviceQuery (sensor): $sensor"
     	result = sensor
     }
     else { 
