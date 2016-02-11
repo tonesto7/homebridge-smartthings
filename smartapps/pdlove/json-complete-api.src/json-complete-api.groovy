@@ -10,9 +10,9 @@ definition(
     author: "Paul Lovelace",
     description: "API for JSON with complete set of devices",
     category: "SmartThings Labs",
-    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png",
-    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience@2x.png",
-    iconX3Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience@2x.png",
+    iconUrl:   "https://dl.dropboxusercontent.com/s/7gy9a43mqhwf2xr/json_icon%401x.png",
+    iconX2Url: "https://dl.dropboxusercontent.com/s/nivk5n45yzz9c65/json_icon%402x.png",
+    iconX3Url: "https://dl.dropboxusercontent.com/s/y1q39zx4enki7wl/json_icon%403x.png",
     oauth: true)
 
 
@@ -26,9 +26,10 @@ def copyConfig() {
     }
     dynamicPage(name: "copyConfig", title: "Config", install:true, uninstall:true) {
         section("Select devices to include in the /devices API call") {
-            paragraph "Version 0.3."
+            paragraph "Version 0.3.1"
             input "deviceList", "capability.refresh", title: "Most Devices", multiple: true, required: false
             input "sensorList", "capability.sensor", title: "Sensor Devices", multiple: true, required: false
+            paragraph "Devices Selected: ${deviceList.size()}\nSensors Selected: ${sensorList.size()}"
         }
         section() {
             paragraph "View this SmartApp's configuration to use it in other places."
@@ -38,6 +39,10 @@ def copyConfig() {
         section() {
         	paragraph "View the JSON generated from the installed devices."
             href url:"${apiServerUrl("/api/smartapps/installations/${app.id}/devices?access_token=${state.accessToken}")}", style:"embedded", required:false, title:"Device Results", description:"View accessories JSON"
+        }
+        section() {
+        	paragraph "Enter the name you would like shown in the smart app list"
+        	label title:"SmartApp Label (optional)", required: false 
         }
     }
 }
@@ -85,15 +90,16 @@ def renderConfig() {
 }
 
 def renderLocation() {
-  [
-    latitude: location.latitude,
-    longitude: location.longitude,
-    mode: location.mode,
-    name: location.name,
-    temperature_scale: location.temperatureScale,
-    zip_code: location.zipCode
-  ]
+  	[
+    	latitude: location.latitude,
+    	longitude: location.longitude,
+    	mode: location.mode,
+    	name: location.name,
+    	temperature_scale: location.temperatureScale,
+    	zip_code: location.zipCode
+  	]
 }
+
 def authorizedDevices() {
     [
         deviceList: deviceList,
@@ -113,96 +119,108 @@ def CommandReply(statusOut, messageOut) {
 }
 
 def deviceCommand() {
-  log.info("Command Request")
-  def device  = deviceList.find { it.id == params.id }
-  def command = params.command
-  if (!device) {
-  	  log.error("Device Not Found")
-      CommandReply("Failure", "Device Not Found")
-  } else if (!device.hasCommand(command)) {
-      log.error("Device "+device.displayName+" does not have the command "+command)
-      CommandReply("Failure", "Device "+device.displayName+" does not have the command "+command)
-  } else {
-      def value1 = request.JSON?.value1
-      def value2 = request.JSON?.value2
-      try {
-      	if (value2) {
-	        device."$command"(value1,value2)
-	    } else if (value1) {
-	    	device."$command"(value1)
-	    } else {
-	    	device."$command"()
-	    }
-        log.info("Command Successful for Device "+device.displayName+", Command "+command)
-        CommandReply("Success", "Device "+device.displayName+", Command "+command)
-      } catch (e) {
-      	log.error("Error Occurred For Device "+device.displayName+", Command "+command)
- 	    CommandReply("Failure", "Error Occurred For Device "+device.displayName+", Command "+command)
-      }
-  }
+	log.info("Command Request")
+  	def device  = deviceList.find { it.id == params.id }
+  	def command = params.command
+  	if (!device) {
+		log.error("Device Not Found")
+      	CommandReply("Failure", "Device Not Found")
+  	} else if (!device.hasCommand(command)) {
+      	log.error("Device "+device.displayName+" does not have the command "+command)
+      	CommandReply("Failure", "Device "+device.displayName+" does not have the command "+command)
+  	} else {
+      	def value1 = request.JSON?.value1
+      	def value2 = request.JSON?.value2
+      	try {
+      		if (value2) {
+	       		device."$command"(value1,value2)
+	    	} else if (value1) {
+	    		device."$command"(value1)
+	    	} else {
+	    		device."$command"()
+	    	}
+        	log.info("Command Successful for Device "+device.displayName+", Command "+command)
+        	CommandReply("Success", "Device "+device.displayName+", Command "+command)
+      	} catch (e) {
+      		log.error("Error Occurred For Device "+device.displayName+", Command "+command)
+ 	    	CommandReply("Failure", "Error Occurred For Device "+device.displayName+", Command "+command)
+      	}
+  	}
 }
 
-
 def deviceAttribute() {
-  def device    = deviceList.find { it.id == params.id }
-  def attribute = params.attribute
-  if (!device) {
-      httpError(404, "Device not found")
-  } else {
-      def currentValue = device.currentValue(attribute)
-      [currentValue: currentValue]
-  }
+	def device = deviceList.find { it.id == params.id }
+  	def attribute = params.attribute
+  	if (!device) {
+    	httpError(404, "Device not found")
+  	} else {
+      	def currentValue = device.currentValue(attribute)
+      	[currentValue: currentValue]
+  	}
 }
 
 def deviceQuery() {
-  def device    = deviceList.find { it.id == params.id }
-  if (!device) {
-      httpError(404, "Device not found")
-  } else {
- 	def deviceData =
-                [
-                    name: device.displayName,
-            		deviceid: device.id,
-            		capabilities: deviceCapabilityList(device),
-            		commands: deviceCommandList(device),
-            		attributes: deviceAttributeList(device)
-                ]
-
-    def deviceJson    = new groovy.json.JsonOutput().toJson(deviceData)
-    render contentType: "application/json", data: deviceJson
+	def device = deviceList.find { it.id == params.id }
+  	def sensor = sensorList.find { it.id == params.id }
+  	def result
+    
+  	if (device) {
+    	//log.debug "DeviceQuery (device): $device"
+ 		result = device
+    } 
+    else if (sensor) {
+    	//log.debug "DeviceQuery (sensor): $sensor"
+    	result = sensor
+    }
+    else { 
+    	result = null
+        httpError(404, "Device not found")
+    } 
+    
+    if (result) {
+    	def jsonData =
+        	[
+         		name: result.displayName,
+            	deviceid: result.id,
+            	capabilities: deviceCapabilityList(result),
+            	commands: deviceCommandList(result),
+            	attributes: deviceAttributeList(result)
+         	]
+    	def resultJson = new groovy.json.JsonOutput().toJson(jsonData)
+    	render contentType: "application/json", data: resultJson
     }
 }
 
 def deviceCapabilityList(device) {
-  def i=0
-  device.capabilities.collectEntries { capability->
-    [
-      (capability.name):1
-    ]
-  }
+  	def i=0
+  	device.capabilities.collectEntries { capability->
+    	[
+      		(capability.name):1
+    	]
+  	}
 }
 
 def deviceCommandList(device) {
-  def i=0
-  device.supportedCommands.collectEntries { command->
-    [
-      (command.name): (command.arguments)
-    ]
-  }
+  	def i=0
+  	device.supportedCommands.collectEntries { command->
+    	[
+      		(command.name): (command.arguments)
+    	]
+  	}
 }
 
 def deviceAttributeList(device) {
-  device.supportedAttributes.collectEntries { attribute->
-    try {
-      [
-        (attribute.name): device.currentValue(attribute.name)
-      ]
-    } catch(e) {
-      [
-        (attribute.name): null
-      ]
-    }
-  }
+  	device.supportedAttributes.collectEntries { attribute->
+    	try {
+      		[
+        		(attribute.name): device.currentValue(attribute.name)
+      		]
+    	} catch(e) {
+      		[
+        		(attribute.name): null
+      		]
+    	}
+  	}
 }
 
 def getAllData() {
@@ -218,15 +236,16 @@ def getAllData() {
 def renderDevices(myList) {
     def deviceData =
         myList.collect { device->
-                [
-                    name: device.displayName,
-            		deviceid: device.id,
-            		capabilities: deviceCapabilityList(device),
-            		commands: deviceCommandList(device),
-            		attributes: deviceAttributeList(device)
-                ]
-            }
+            [
+            	name: device.displayName,
+            	deviceid: device.id,
+            	capabilities: deviceCapabilityList(device),
+            	commands: deviceCommandList(device),
+            	attributes: deviceAttributeList(device)
+            ]
+        }
 }
+
 mappings {
     if (!params.access_token || (params.access_token && params.access_token != state.accessToken)) {
         path("/devices")                        { action: [GET: "authError"] }
