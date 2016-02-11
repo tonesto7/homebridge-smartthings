@@ -297,6 +297,7 @@ function SmartThingsAccessory(platform, device) {
 
 
         if ((device.capabilities["Smoke Detector"] !== undefined) && (that.device.attributes.smoke)) {
+            this.deviceGroup = "dectors";
             this
                 .getService(Service.SmokeSensor)
                 .getCharacteristic(Characteristic.SmokeDetected)
@@ -310,6 +311,7 @@ function SmartThingsAccessory(platform, device) {
 
 
         if ((device.capabilities["Carbon Monoxide Detector"] !== undefined) && (that.device.attributes.carbonMonoxide)) {
+            this.deviceGroup = "dectors";
             this
                 .getService(Service.CarbonMonoxideSensor)
                 .getCharacteristic(Characteristic.CarbonMonoxideDetected)
@@ -550,16 +552,16 @@ function SmartThingsAccessory(platform, device) {
 }
 
 function loadData(data, myObject) {
+    var that=this;
     if (myObject !== undefined) that = myObject;
     if (data !== undefined) {
-        this.device = data;
         for (var i = 0; i < that.services.length; i++) {
             for (var j = 0; j < that.services[i].characteristics.length; j++) {
                 that.services[i].characteristics[j].getValue();
             }
         }
     } else {
-        var that = this;
+        this.log.debug("Fetching Device Data")
         this.platform.api.getDevice(this.deviceid, function (data) {
             if (data === undefined) return;
             this.device = data;
