@@ -32,7 +32,9 @@ SmartThingsPlatform.prototype = {
 	reloadData: function (callback) {
 		var that = this;
 		var foundAccessories = [];
+        this.log.debug("Refreshing All Device Data");
 		smartthings.getDevices(function (myList) {
+            that.log.debug("Received All Device Data");
 				// success
             if (myList && myList.deviceList && myList.deviceList instanceof Array) {
 			var populateDevices = function(devices) {
@@ -42,8 +44,7 @@ SmartThingsPlatform.prototype = {
 					var accessory = undefined;
 					if (that.deviceLookup[device.deviceid]) {
 						accessory = that.deviceLookup[device.deviceid];
-						accessory.device = devices[i];
-						accessory.loadData();						
+						accessory.loadData(devices[i]);						
 					} else {
 						accessory = new SmartThingsAccessory(that, device);
 
