@@ -10,9 +10,9 @@ definition(
     author: "Paul Lovelace",
     description: "API for JSON with complete set of devices",
     category: "SmartThings Labs",
-    iconUrl:   "https://dl.dropboxusercontent.com/s/16teoleja6x39i0/homekit_icon.png",
-    iconX2Url: "https://dl.dropboxusercontent.com/s/16teoleja6x39i0/homekit_icon.png",
-    iconX3Url: "https://dl.dropboxusercontent.com/s/16teoleja6x39i0/homekit_icon.png",
+    iconUrl:   "https://dl.dropboxusercontent.com/s/7gy9a43mqhwf2xr/json_icon%401x.png",
+    iconX2Url: "https://dl.dropboxusercontent.com/s/nivk5n45yzz9c65/json_icon%402x.png",
+    iconX3Url: "https://dl.dropboxusercontent.com/s/y1q39zx4enki7wl/json_icon%403x.png",
     oauth: true)
 
 
