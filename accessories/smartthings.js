@@ -297,6 +297,7 @@ function SmartThingsAccessory(platform, device) {
 
 
         if ((device.capabilities["Smoke Detector"] !== undefined) && (that.device.attributes.smoke)) {
+            this.deviceGroup = "dectors";
             this
                 .getService(Service.SmokeSensor)
                 .getCharacteristic(Characteristic.SmokeDetected)
@@ -310,6 +311,7 @@ function SmartThingsAccessory(platform, device) {
 
 
         if ((device.capabilities["Carbon Monoxide Detector"] !== undefined) && (that.device.attributes.carbonMonoxide)) {
+            this.deviceGroup = "dectors";
             this
                 .getService(Service.CarbonMonoxideSensor)
                 .getCharacteristic(Characteristic.CarbonMonoxideDetected)
