@@ -20,16 +20,19 @@ preferences {
     page(name: "copyConfig")
 }
 
+
+
 def copyConfig() {
     if (!state.accessToken) {
         createAccessToken()
     }
     dynamicPage(name: "copyConfig", title: "Config", install:true, uninstall:true) {
         section("Select devices to include in the /devices API call") {
-            paragraph "Version 0.3.2"
-            input "deviceList", "capability.refresh", title: "Most Devices", multiple: true, required: false, submitOnChange: true
-            input "sensorList", "capability.sensor", title: "Sensor Devices", multiple: true, required: false, submitOnChange: true
-            paragraph "Devices Selected: ${deviceList ? deviceList?.size() : 0}\nSensors Selected: ${sensorList ? sensorList?.size() : 0}"
+            paragraph "Version 0.3.5"
+            input "deviceList", "capability.refresh", title: "Most Devices", multiple: true, required: false
+            input "sensorList", "capability.sensor", title: "Sensor Devices", multiple: true, required: false
+            input "switchList", "capability.switch", title: "All Switches", multiple: true, required: false
+            paragraph "Devices Selected: ${deviceList ? deviceList?.size() : 0}\nSensors Selected: ${sensorList ? sensorList?.size() : 0}\nSwitches Selected: ${switchList ? switchList?.size() : 0}"
         }
         section() {
             paragraph "View this SmartApp's configuration to use it in other places."
@@ -50,12 +53,10 @@ def copyConfig() {
 def installed() {
 	log.debug "Installed with settings: ${settings}"
 	initialize()
-
 }
 
 def updated() {
 	log.debug "Updated with settings: ${settings}"
-
 	unsubscribe()
 	initialize()
 }
@@ -64,6 +65,17 @@ def initialize() {
 	if(!state.accessToken) {
          createAccessToken()
     }
+}
+
+def addDeviceIDsToMaster(myList) {
+	myList.each {
+		if ((it)&&(!state.idList.contains(it.id))) {
+			state.idList << it.id
+            log.warn("Added ${it.displayName}")
+		} else {
+        	log.warn("Skipped ${it.displayName}")
+        }
+	}
 }
 
 
@@ -100,13 +112,6 @@ def renderLocation() {
   	]
 }
 
-def authorizedDevices() {
-    [
-        deviceList: deviceList,
-        sensorList: sensorList
-    ]
-}
-
 def CommandReply(statusOut, messageOut) {
 	def replyData =
     	[
@@ -118,10 +123,21 @@ def CommandReply(statusOut, messageOut) {
     render contentType: "application/json", data: replyJson
 }
 
+def findDevice(parmid) {
+	def device = deviceList.find { it.id == paramid }
+  	if (device) return device
+	device = sensorList.find { it.id == paramid }
+	if (device) return device
+  	device = switchList.find { it.id == paramid }
+
+	return device
+ }
+
 def deviceCommand() {
 	log.info("Command Request")
-  	def device  = deviceList.find { it.id == params.id }
-  	def command = params.command
+	def device = findDevice(params.id)    
+    def command = params.command
+    
   	if (!device) {
 		log.error("Device Not Found")
       	CommandReply("Failure", "Device Not Found")
@@ -149,8 +165,8 @@ def deviceCommand() {
 }
 
 def deviceAttribute() {
-	def device = deviceList.find { it.id == params.id }
-  	def attribute = params.attribute
+	def device = findDevice(params.id)    
+    def attribute = params.attribute
   	if (!device) {
     	httpError(404, "Device not found")
   	} else {
@@ -160,19 +176,8 @@ def deviceAttribute() {
 }
 
 def deviceQuery() {
-	def device = deviceList.find { it.id == params.id }
-  	def sensor = sensorList.find { it.id == params.id }
-  	def result
-    
-  	if (device) {
-    	//log.debug "DeviceQuery (device): $device"
- 		result = device
-    } 
-    else if (sensor) {
-    	//log.debug "DeviceQuery (sensor): $sensor"
-    	result = sensor
-    }
-    else { 
+	def device = findDevice(params.id)    
+    if (!device) { 
     	result = null
         httpError(404, "Device not found")
     } 
@@ -180,11 +185,11 @@ def deviceQuery() {
     if (result) {
     	def jsonData =
         	[
-         		name: result.displayName,
-            	deviceid: result.id,
-            	capabilities: deviceCapabilityList(result),
-            	commands: deviceCommandList(result),
-            	attributes: deviceAttributeList(result)
+         		name: device.displayName,
+            	deviceid: device.id,
+            	capabilities: deviceCapabilityList(device),
+            	commands: deviceCommandList(device),
+            	attributes: deviceAttributeList(device)
          	]
     	def resultJson = new groovy.json.JsonOutput().toJson(jsonData)
     	render contentType: "application/json", data: resultJson
@@ -226,24 +231,24 @@ def deviceAttributeList(device) {
 def getAllData() {
 	def deviceData =
     [	location: renderLocation(),
-        deviceList: renderDevices(deviceList),
-        sensorList: renderDevices(sensorList)
-    ]
-    def deviceJson    = new groovy.json.JsonOutput().toJson(deviceData)
+        deviceList: renderDevices() ]
+    def deviceJson = new groovy.json.JsonOutput().toJson(deviceData)
     render contentType: "application/json", data: deviceJson
 }
 
-def renderDevices(myList) {
-    def deviceData =
-        myList.collect { device->
-            [
-            	name: device.displayName,
-            	deviceid: device.id,
-            	capabilities: deviceCapabilityList(device),
-            	commands: deviceCommandList(device),
-            	attributes: deviceAttributeList(device)
-            ]
-        }
+//When adding device groups, need to add here
+def renderDevices() {
+    def deviceData = []
+        deviceList.each { 
+        	deviceData << [name: it.displayName, deviceid: it.id, capabilities: deviceCapabilityList(it), commands: deviceCommandList(it), attributes: deviceAttributeList(it)]
+	}    
+        sensorList.each  { 
+        	deviceData << [name: it.displayName, deviceid: it.id, capabilities: deviceCapabilityList(it), commands: deviceCommandList(it), attributes: deviceAttributeList(it)]
+	}
+        switchList.each  { 
+        	deviceData << [name: it.displayName, deviceid: it.id, capabilities: deviceCapabilityList(it), commands: deviceCommandList(it), attributes: deviceAttributeList(it)]
+	}
+    return deviceData
 }
 
 mappings {
