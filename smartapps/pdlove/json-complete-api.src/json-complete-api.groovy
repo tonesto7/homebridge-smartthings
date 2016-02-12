@@ -26,10 +26,10 @@ def copyConfig() {
     }
     dynamicPage(name: "copyConfig", title: "Config", install:true, uninstall:true) {
         section("Select devices to include in the /devices API call") {
-            paragraph "Version 0.3.1"
-            input "deviceList", "capability.refresh", title: "Most Devices", multiple: true, required: false
-            input "sensorList", "capability.sensor", title: "Sensor Devices", multiple: true, required: false
-            paragraph "Devices Selected: ${deviceList.size()}\nSensors Selected: ${sensorList.size()}"
+            paragraph "Version 0.3.2"
+            input "deviceList", "capability.refresh", title: "Most Devices", multiple: true, required: false, submitOnChange: true
+            input "sensorList", "capability.sensor", title: "Sensor Devices", multiple: true, required: false, submitOnChange: true
+            paragraph "Devices Selected: ${deviceList ? deviceList?.size() : 0}\nSensors Selected: ${sensorList ? sensorList?.size() : 0}"
         }
         section() {
             paragraph "View this SmartApp's configuration to use it in other places."
