@@ -1,6 +1,6 @@
 var smartthings = require('./lib/smartthingsapi');
 
-var Service, Characteristic, Accessory, uuid;
+var Service, Characteristic, Accessory, uuid, EnergyCharacteristics;
 
 var SmartThingsAccessory;
 
@@ -26,6 +26,7 @@ function SmartThingsPlatform(log, config) {
 	this.api = smartthings;
 	this.log = log;
 	this.deviceLookup = {};
+    this.firstpoll = true;
 }
 
 SmartThingsPlatform.prototype = {
@@ -50,9 +51,9 @@ SmartThingsPlatform.prototype = {
 
 						if (accessory != undefined) {
 							if ((accessory.services.length<=1)||(accessory.deviceGroup=="unknown")) {
-								that.log("Device Skipped - Group " + accessory.deviceGroup + ", Name " + accessory.name+ ", ID " + accessory.deviceid+", JSON: "+ JSON.stringify(device));
+								if (that.firstpoll) that.log("Device Skipped - Group " + accessory.deviceGroup + ", Name " + accessory.name+ ", ID " + accessory.deviceid+", JSON: "+ JSON.stringify(device));
 							} else {
-								that.log("Device Added - Group " + accessory.deviceGroup + ", Name " + accessory.name + ", ID " + accessory.deviceid+", JSON: "+ JSON.stringify(device));
+								that.log("Device Added - Group " + accessory.deviceGroup + ", Name " + accessory.name + ", ID " + accessory.deviceid)//+", JSON: "+ JSON.stringify(device));
 								that.deviceLookup[accessory.deviceid] = accessory;
 								foundAccessories.push(accessory);
 							}
@@ -61,19 +62,17 @@ SmartThingsPlatform.prototype = {
 				}
 			}
 			if (myList.location) {
-				this.temperature_unit = myList.location.temperature_scale;
+				that.temperature_unit = myList.location.temperature_scale;
 			}
 			
 			populateDevices(myList.deviceList);
-			if (myList.sensorList && myList.sensorList instanceof Array) {
-				populateDevices(myList.sensorList);
-			}
             } else if (myList.error) {
                 that.log ("Error received type " + myList.type+' - '+myList.message)
             } else { 
                 that.log ("Invalid Reponse from API call")}
 			if (callback)
 				callback(foundAccessories)
+            that.firstpoll=false;
 		});
     },
 	accessories: function (callback) {
