@@ -178,7 +178,7 @@ def deviceAttribute() {
 def deviceQuery() {
 	def device = findDevice(params.id)    
     if (!device) { 
-    	result = null
+    	device = null
         httpError(404, "Device not found")
     } 
     
