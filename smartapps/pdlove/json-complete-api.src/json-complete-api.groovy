@@ -28,7 +28,7 @@ def copyConfig() {
     }
     dynamicPage(name: "copyConfig", title: "Config", install:true, uninstall:true) {
         section("Select devices to include in the /devices API call") {
-            paragraph "Version 0.3.5"
+            paragraph "Version 0.3.6"
             input "deviceList", "capability.refresh", title: "Most Devices", multiple: true, required: false
             input "sensorList", "capability.sensor", title: "Sensor Devices", multiple: true, required: false
             input "switchList", "capability.switch", title: "All Switches", multiple: true, required: false
@@ -123,7 +123,7 @@ def CommandReply(statusOut, messageOut) {
     render contentType: "application/json", data: replyJson
 }
 
-def findDevice(parmid) {
+def findDevice(paramid) {
 	def device = deviceList.find { it.id == paramid }
   	if (device) return device
 	device = sensorList.find { it.id == paramid }
