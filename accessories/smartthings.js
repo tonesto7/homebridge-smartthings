@@ -392,9 +392,9 @@ function SmartThingsAccessory(platform, device) {
                                 var cur = that.device.attributes.temperature;
                                 var isHighTemp = Math.abs(high - cur) < Math.abs(cur - low);
                                 if (isHighTemp) {
-                                high = temp_requested;
+                                high = temp;
                                 } else {
-                                low = temp_requested;
+                                low = temp;
                                 }
                                 that.platform.api.runCommand(null, that.deviceid, "setHeatingSetpoint", { value1: low });
                                 that.platform.api.runCommand(callback, that.deviceid, "setCoolingSetpoint", { value1: high });
