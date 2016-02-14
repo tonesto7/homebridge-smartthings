@@ -22,12 +22,12 @@ preferences {
 
 //When adding device groups, need to add here
 def copyConfig() {
-    if (!atomicstate.accessToken) {
+    if (!atomicState?.accessToken) {
         createAccessToken()
     }
     dynamicPage(name: "copyConfig", title: "Config", install:true, uninstall:true) {
         section("Select devices to include in the /devices API call") {
-            paragraph "Version 0.4.0"
+            paragraph "Version 0.4.1"
             input "deviceList", "capability.refresh", title: "Most Devices", multiple: true, required: false
             input "sensorList", "capability.sensor", title: "Sensor Devices", multiple: true, required: false
             input "switchList", "capability.switch", title: "All Switches", multiple: true, required: false
@@ -35,12 +35,12 @@ def copyConfig() {
         }
         section() {
             paragraph "View this SmartApp's configuration to use it in other places."
-            href url:"${apiServerUrl("/api/smartapps/installations/${app.id}/config?access_token=${atomicstate.accessToken}")}", style:"embedded", required:false, title:"Config", description:"Tap, select, copy, then click \"Done\""
+            href url:"${apiServerUrl("/api/smartapps/installations/${app.id}/config?access_token=${atomicState?.accessToken}")}", style:"embedded", required:false, title:"Config", description:"Tap, select, copy, then click \"Done\""
         }
 
         section() {
         	paragraph "View the JSON generated from the installed devices."
-            href url:"${apiServerUrl("/api/smartapps/installations/${app.id}/devices?access_token=${atomicstate.accessToken}")}", style:"embedded", required:false, title:"Device Results", description:"View accessories JSON"
+            href url:"${apiServerUrl("/api/smartapps/installations/${app.id}/devices?access_token=${atomicState?.accessToken}")}", style:"embedded", required:false, title:"Device Results", description:"View accessories JSON"
         }
         section() {
         	paragraph "Enter the name you would like shown in the smart app list"
@@ -87,7 +87,7 @@ def updated() {
 }
 
 def initialize() {
-	if(!state.accessToken) {
+	if(!atomicState.accessToken) {
          createAccessToken()
     }
     registerAll()
@@ -312,7 +312,7 @@ def getChangeEvents() {
 }
 
 mappings {
-    if (!params.access_token || (params.access_token && params.access_token != state.accessToken)) {
+    if (!params.access_token || (params.access_token && params.access_token != atomicState.accessToken)) {
         path("/devices")                        { action: [GET: "authError"] }
         path("/config")                         { action: [GET: "authError"] }
         path("/location")                       { action: [GET: "authError"] }
