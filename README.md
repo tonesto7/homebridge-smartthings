@@ -1,6 +1,7 @@
 # homebridge-smartthings
 
-This is under active development. ETA on first npm release is 02/06/2016. Usuable code should be on here this weekend.
+Current npm version - 0.3.5
+Current Smartapp version - 0.3.6
 
 ## Installation
 
@@ -57,3 +58,9 @@ polling_seconds is optional and defaults to 10. Smartthings can produce Rate Lim
  * If it says "Device Skipped", copy/paste that entire line to an Issue on Github. It supplies all the information needed to get the device up an working if HomeKit can support it.
  * If it says "Device Added" then the device should appear in HomeKit. If specific function is missing, post the Device Added line and identify what you are missing from it.
 * If a large number of similar devices are Skipped or missing functionality, it may just be a Capability that is missing. If so, it will be listed in the "Unknown Capabilities" line item.
+
+## What's New
+I should have started this a while back, but didn't think to. I'll start keeping this updated.
+
+* 0.3.6 
+ * [SmartApp] Fixed a bug that caused none of the devices to be usable after the initial load.

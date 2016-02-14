@@ -1,6 +1,6 @@
 var inherits = require('util').inherits;
 
-var Accessory, Service, Characteristic, uuid;
+var Accessory, Service, Characteristic, uuid, EnergyCharacteristics;
 
 /*
  *   SmartThings Accessory
@@ -11,6 +11,8 @@ module.exports = function (oAccessory, oService, oCharacteristic, ouuid) {
         Accessory = oAccessory;
         Service = oService;
         Characteristic = oCharacteristic;
+        EnergyCharacteristics = require('../lib/customCharacteristics').EnergyCharacteristics(Characteristic)
+
         uuid = ouuid;
 
         inherits(SmartThingsAccessory, Accessory);
@@ -41,6 +43,7 @@ function SmartThingsAccessory(platform, device) {
         if ((platform.knownCapabilities.indexOf(index) == -1) && (platform.unknownCapabilities.indexOf(index) == -1))
             platform.unknownCapabilities.push(index);
     }
+
 
 
     this.deviceGroup = "unknown"; //This way we can easily tell if we set a device group
@@ -297,6 +300,7 @@ function SmartThingsAccessory(platform, device) {
 
 
         if ((device.capabilities["Smoke Detector"] !== undefined) && (that.device.attributes.smoke)) {
+            this.deviceGroup = "dectors";
             this
                 .getService(Service.SmokeSensor)
                 .getCharacteristic(Characteristic.SmokeDetected)
@@ -310,6 +314,7 @@ function SmartThingsAccessory(platform, device) {
 
 
         if ((device.capabilities["Carbon Monoxide Detector"] !== undefined) && (that.device.attributes.carbonMonoxide)) {
+            this.deviceGroup = "dectors";
             this
                 .getService(Service.CarbonMonoxideSensor)
                 .getCharacteristic(Characteristic.CarbonMonoxideDetected)
@@ -335,61 +340,61 @@ function SmartThingsAccessory(platform, device) {
             .getService(Service.Thermostat)
             .getCharacteristic(Characteristic.TargetTemperature)
             .on('get', function (callback) {
-                var temp_requested = undefined;
+                var temp = undefined;
                 switch (that.device.attributes.thermostatMode) {
                     case "cool":
-                        temp_requested = that.device.attributes.coolingSetpoint;
+                        temp = that.device.attributes.coolingSetpoint;
                         break;
                     case "emergency heat":
                     case "heat":
-                        temp_requested = that.device.attributes.heatingSetpoint;
+                        temp = that.device.attributes.heatingSetpoint;
                         break;
                     case "auto":
-                        temp_requested = (that.device.attributes.heatingSetpoint + that.device.attributes.heatingSetpoint) / 2;
+                        temp = (that.device.attributes.heatingSetpoint + that.device.attributes.coolingSetpoint) / 2;
                         break;
                     default: //The above list should be inclusive, but we need to return something if they change stuff.
-                        temp_requested = (that.device.attributes.heatingSetpoint + that.device.attributes.heatingSetpoint) / 2;
+                        temp = (that.device.attributes.heatingSetpoint + that.device.attributes.coolingSetpoint) / 2;
                         break;
                 }
-                if (!temp_requested) callback('Unknown');
+                if (!temp) callback('Unknown');
                 if (that.platform.temperature_unit == 'C')
-                    callback(null, temp_requested);
+                    callback(null, temp);
                 else
-                    callback(null, (temp_requested - 32) / 1.8);
+                    callback(null, (temp - 32) / 1.8);
             })
             .on('set', function (value, callback) {
                 //Convert the Celsius value to the appropriate unit for Smartthings
-                var temp_requested = value;
+                var temp = value;
                 if (that.platform.temperature_unit == 'C')
-                    temp_requested = value;
+                    temp = value;
                 else
-                    temp_requested = ((value * 1.8) + 32);
+                    temp = ((value * 1.8) + 32);
                 
                 //Set the appropriate temperature unit based on the mode
                 switch (that.device.attributes.thermostatMode) {
                     case "cool":
-                        that.platform.api.runCommand(callback, that.deviceid, "setCoolingSetpoint", { value1: temp_requested });
-                        that.device.attributes.coolingSetpoint = temp_requested;
+                        that.platform.api.runCommand(callback, that.deviceid, "setCoolingSetpoint", { value1: temp });
+                        that.device.attributes.coolingSetpoint = temp;
                         break;
                     case "emergency heat":
                     case "heat":
-                        that.platform.api.runCommand(callback, that.deviceid, "setHeatingSetpoint", { value1: temp_requested });
-                        that.device.attributes.heatingSetpoint = temp_requested;
+                        that.platform.api.runCommand(callback, that.deviceid, "setHeatingSetpoint", { value1: temp });
+                        that.device.attributes.heatingSetpoint = temp;
                         break;
                     case "auto":
-                        that.platform.api.runCommand(null, that.deviceid, "setHeatingSetpoint", { value1: temp_requested - 0.5 });
-                        that.platform.api.runCommand(callback, that.deviceid, "setCoolingSetpoint", { value1: temp_requested + 0.5 });
-                        that.device.attributes.coolingSetpoint = temp_requested;
-                        that.device.attributes.heatingSetpoint = temp_requested;
+                        that.platform.api.runCommand(null, that.deviceid, "setHeatingSetpoint", { value1: temp - 0.5 });
+                        that.platform.api.runCommand(callback, that.deviceid, "setCoolingSetpoint", { value1: temp + 0.5 });
+                        that.device.attributes.coolingSetpoint = temp-0.5;
+                        that.device.attributes.heatingSetpoint = temp+0.5;
                         break;
                     default: //The above list should be inclusive, but we need to return something if they change stuff.
-                        if (that.device.attributes.temperature > temp_requested) {
-                            that.platform.api.runCommand(null, that.deviceid, "setCoolingSetpoint", { value1: temp_requested });
-                            that.device.attributes.coolingSetpoint = temp_requested;
+                        if (that.device.attributes.temperature > temp) {
+                            that.platform.api.runCommand(null, that.deviceid, "setCoolingSetpoint", { value1: temp });
+                            that.device.attributes.coolingSetpoint = temp;
                             that.platform.api.runCommand(callback, that.deviceid, "cool");
                         } else {
-                            that.platform.api.runCommand(null, that.deviceid, "setHeatingSetpoint", { value1: temp_requested - 0.5 });
-                            that.device.attributes.heatingSetpoint = temp_requested;
+                            that.platform.api.runCommand(null, that.deviceid, "setHeatingSetpoint", { value1: temp - 0.5 });
+                            that.device.attributes.heatingSetpoint = temp;
                             that.platform.api.runCommand(callback, that.deviceid, "heat");
                         }
                         break;
@@ -417,13 +422,13 @@ function SmartThingsAccessory(platform, device) {
             })
             .on('set', function (value, callback) {
                 //Convert the Celsius value to the appropriate unit for Smartthings
-                var temp_requested = value;
+                var temp = value;
                 if (that.platform.temperature_unit == 'C')
-                    temp_requested = value;
+                    temp = value;
                 else
-                    temp_requested = ((value * 1.8) + 32);
-                that.platform.api.runCommand(callback, that.deviceid, "setHeatingSetpoint", { value1: temp_requested });
-                that.device.attributes.heatingSetpoint = temp_requested;
+                    temp = ((value * 1.8) + 32);
+                that.platform.api.runCommand(callback, that.deviceid, "setHeatingSetpoint", { value1: temp });
+                that.device.attributes.heatingSetpoint = temp;
             });
 
         this
@@ -437,13 +442,13 @@ function SmartThingsAccessory(platform, device) {
             })
             .on('set', function (value, callback) {
                 //Convert the Celsius value to the appropriate unit for Smartthings
-                var temp_requested = value;
+                var temp = value;
                 if (that.platform.temperature_unit == 'C')
-                    temp_requested = value;
+                    temp = value;
                 else
-                    temp_requested = ((value * 1.8) + 32);
-                that.platform.api.runCommand(callback, that.deviceid, "setCoolingSetpoint", { value1: temp_requested });
-                that.device.attributes.coolingSetpoint = temp_requested;
+                    temp = ((value * 1.8) + 32);
+                that.platform.api.runCommand(callback, that.deviceid, "setCoolingSetpoint", { value1: temp });
+                that.device.attributes.coolingSetpoint = temp;
             });
     }
 
@@ -481,8 +486,10 @@ function SmartThingsAccessory(platform, device) {
         this.addService(Service.TemperatureSensor)
             .getCharacteristic(Characteristic.CurrentTemperature)
             .on('get', function (callback) {
-                //Need to add logic to determine if this is in C or F
-                callback(null, (that.device.attributes.temperature - 32) / 1.8);
+                if (that.platform.temperature_unit == 'C')
+                    callback(null, that.device.attributes.temperature);
+                else
+                    callback(null, (that.device.attributes.temperature - 32) / 1.8);
             });
     }
 
@@ -538,6 +545,22 @@ function SmartThingsAccessory(platform, device) {
 
     }
 
+    if (device.capabilities["Energy Meter"] !==undefined) {
+        this.deviceGroup='EnergyMeter';
+        this.addService(Service.Outlet)
+            .addCharacteristic(EnergyCharacteristics.TotalConsumption1)
+            .on('get', function (callback) {
+                callback(null, that.device.attributes.energy);
+            });
+        this.getService(Service.Outlet)
+            .addCharacteristic(EnergyCharacteristics.CurrentConsumption1)
+            .on('get', function (callback) {
+                callback(null, that.device.attributes.power);
+            });
+
+        
+    }
+
     if (device.capabilities["Acceleration Sensor"] !== undefined) {
         if (this.deviceGroup == 'unknown') this.deviceGroup = "sensor";
     }
@@ -550,16 +573,16 @@ function SmartThingsAccessory(platform, device) {
 }
 
 function loadData(data, myObject) {
+    var that=this;
     if (myObject !== undefined) that = myObject;
     if (data !== undefined) {
-        this.device = data;
         for (var i = 0; i < that.services.length; i++) {
             for (var j = 0; j < that.services[i].characteristics.length; j++) {
                 that.services[i].characteristics[j].getValue();
             }
         }
     } else {
-        var that = this;
+        this.log.debug("Fetching Device Data")
         this.platform.api.getDevice(this.deviceid, function (data) {
             if (data === undefined) return;
             this.device = data;
