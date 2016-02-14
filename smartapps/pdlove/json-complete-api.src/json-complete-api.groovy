@@ -20,15 +20,14 @@ preferences {
     page(name: "copyConfig")
 }
 
-
-
+//When adding device groups, need to add here
 def copyConfig() {
-    if (!state.accessToken) {
+    if (!atomicstate.accessToken) {
         createAccessToken()
     }
     dynamicPage(name: "copyConfig", title: "Config", install:true, uninstall:true) {
         section("Select devices to include in the /devices API call") {
-            paragraph "Version 0.3.6"
+            paragraph "Version 0.4.0"
             input "deviceList", "capability.refresh", title: "Most Devices", multiple: true, required: false
             input "sensorList", "capability.sensor", title: "Sensor Devices", multiple: true, required: false
             input "switchList", "capability.switch", title: "All Switches", multiple: true, required: false
@@ -36,12 +35,12 @@ def copyConfig() {
         }
         section() {
             paragraph "View this SmartApp's configuration to use it in other places."
-            href url:"${apiServerUrl("/api/smartapps/installations/${app.id}/config?access_token=${state.accessToken}")}", style:"embedded", required:false, title:"Config", description:"Tap, select, copy, then click \"Done\""
+            href url:"${apiServerUrl("/api/smartapps/installations/${app.id}/config?access_token=${atomicstate.accessToken}")}", style:"embedded", required:false, title:"Config", description:"Tap, select, copy, then click \"Done\""
         }
 
         section() {
         	paragraph "View the JSON generated from the installed devices."
-            href url:"${apiServerUrl("/api/smartapps/installations/${app.id}/devices?access_token=${state.accessToken}")}", style:"embedded", required:false, title:"Device Results", description:"View accessories JSON"
+            href url:"${apiServerUrl("/api/smartapps/installations/${app.id}/devices?access_token=${atomicstate.accessToken}")}", style:"embedded", required:false, title:"Device Results", description:"View accessories JSON"
         }
         section() {
         	paragraph "Enter the name you would like shown in the smart app list"
@@ -49,6 +48,32 @@ def copyConfig() {
         }
     }
 }
+
+def renderDevices() {
+    def deviceData = []
+        deviceList.each { 
+        	deviceData << [name: it.displayName, deviceid: it.id, capabilities: deviceCapabilityList(it), commands: deviceCommandList(it), attributes: deviceAttributeList(it)]
+	}    
+        sensorList.each  { 
+        	deviceData << [name: it.displayName, deviceid: it.id, capabilities: deviceCapabilityList(it), commands: deviceCommandList(it), attributes: deviceAttributeList(it)]
+	}
+        switchList.each  { 
+        	deviceData << [name: it.displayName, deviceid: it.id, capabilities: deviceCapabilityList(it), commands: deviceCommandList(it), attributes: deviceAttributeList(it)]
+	}
+    return deviceData
+}
+
+def findDevice(paramid) {
+	def device = deviceList.find { it.id == paramid }
+  	if (device) return device
+	device = sensorList.find { it.id == paramid }
+	if (device) return device
+  	device = switchList.find { it.id == paramid }
+
+	return device
+ }
+//No more individual device group definitions after here.
+
 
 def installed() {
 	log.debug "Installed with settings: ${settings}"
@@ -65,19 +90,9 @@ def initialize() {
 	if(!state.accessToken) {
          createAccessToken()
     }
+    registerAll()
+	state.subscriptionRenewed = 0
 }
-
-def addDeviceIDsToMaster(myList) {
-	myList.each {
-		if ((it)&&(!state.idList.contains(it.id))) {
-			state.idList << it.id
-            log.warn("Added ${it.displayName}")
-		} else {
-        	log.warn("Skipped ${it.displayName}")
-        }
-	}
-}
-
 
 def authError() {
     [error: "Permission denied"]
@@ -122,16 +137,6 @@ def CommandReply(statusOut, messageOut) {
     def replyJson    = new groovy.json.JsonOutput().toJson(replyData)
     render contentType: "application/json", data: replyJson
 }
-
-def findDevice(paramid) {
-	def device = deviceList.find { it.id == paramid }
-  	if (device) return device
-	device = sensorList.find { it.id == paramid }
-	if (device) return device
-  	device = switchList.find { it.id == paramid }
-
-	return device
- }
 
 def deviceCommand() {
 	log.info("Command Request")
@@ -229,6 +234,11 @@ def deviceAttributeList(device) {
 }
 
 def getAllData() {
+	//Since we're about to send all of the data, we'll count this as a subscription renewal and clear out pending changes.
+	state.subscriptionRenewed = now()
+    state.devchanges = []
+
+
 	def deviceData =
     [	location: renderLocation(),
         deviceList: renderDevices() ]
@@ -236,19 +246,69 @@ def getAllData() {
     render contentType: "application/json", data: deviceJson
 }
 
-//When adding device groups, need to add here
-def renderDevices() {
-    def deviceData = []
-        deviceList.each { 
-        	deviceData << [name: it.displayName, deviceid: it.id, capabilities: deviceCapabilityList(it), commands: deviceCommandList(it), attributes: deviceAttributeList(it)]
-	}    
-        sensorList.each  { 
-        	deviceData << [name: it.displayName, deviceid: it.id, capabilities: deviceCapabilityList(it), commands: deviceCommandList(it), attributes: deviceAttributeList(it)]
+def startSubscription() {
+//This simply registers the subscription.
+    state.subscriptionRenewed = now()
+	def deviceJson = new groovy.json.JsonOutput().toJson([status: "Success"])
+    render contentType: "application/json", data: deviceJson    
+}
+
+def endSubscription() {
+//Because it takes too long to register for an api command, we don't actually unregister.
+//We simply blank the devchanges and change the subscription renewal to two hours ago.
+	state.devchanges = []
+    state.subscriptionRenewed = 0
+ 	def deviceJson = new groovy.json.JsonOutput().toJson([status: "Success"])
+    render contentType: "application/json", data: deviceJson     
+}
+
+def registerAll() {
+//This has to be done at startup because it takes too long for a normal command.
+	log.debug "Registering All Events"
+    state.devchanges = []
+	registerChangeHandler(deviceList)
+	registerChangeHandler(sensorList)
+	registerChangeHandler(switchList)
+}
+
+def registerChangeHandler(myList) {
+	myList.each { myDevice ->
+		def theAtts = myDevice.supportedAttributes
+		theAtts.each {att ->
+		    subscribe(myDevice, att.name, changeHandler)
+    	log.debug "Registering ${myDevice.displayName}.${att.name}"
+		}
 	}
-        switchList.each  { 
-        	deviceData << [name: it.displayName, deviceid: it.id, capabilities: deviceCapabilityList(it), commands: deviceCommandList(it), attributes: deviceAttributeList(it)]
+}
+
+def changeHandler(evt) {
+	//Only add to the state's devchanges if the endpoint has renewed in the last 10 minutes.
+    if (state.subscriptionRenewed>(now()-(1000*60*10))) {
+  		if (evt.isStateChange()) {
+			state.devchanges << [device: evt.deviceId, attribute: evt.name, value: evt.value, date: evt.date]
+      }
+    } else if (state.subscriptionRenewed>0) { //Otherwise, clear it
+    	log.debug "Endpoint Subscription Expired. No longer storing changes for devices."
+        state.devchanges=[]
+        state.subscriptionRenewed=0
+    }
+}
+
+def getChangeEvents() {
+    //Store the changes so we can swap it out very quickly and eliminate the possibility of losing any.
+    //This is mainly to make this thread safe because I'm willing to bet that a change event can fire
+    //while generating/sending the JSON.
+    def oldchanges = state.devchanges
+    state.devchanges=[]
+    state.subscriptionRenewed = now()
+	if (oldchanges.size()==0) {
+        def deviceJson = new groovy.json.JsonOutput().toJson([status: "None"])
+	    render contentType: "application/json", data: deviceJson    
+    } else {
+    	def changeJson = new groovy.json.JsonOutput().toJson(oldchanges)
+	log.debug "Sending Changes: ${changeJson}"
+    	render contentType: "application/json", data: changeJson
 	}
-    return deviceData
 }
 
 mappings {
@@ -257,7 +317,11 @@ mappings {
         path("/config")                         { action: [GET: "authError"] }
         path("/location")                       { action: [GET: "authError"] }
         path("/:id/command/:command")     		{ action: [POST: "authError"] }
+        path("/:id/query")						{ action: [GET: "authError"] }
         path("/:id/attribute/:attribute") 		{ action: [GET: "authError"] }
+        path("/subscribe")                      { action: [GET: "authError"] }
+        path("/getUpdates")                     { action: [GET: "authError"] }
+        path("/unsubscribe")                      { action: [GET: "authError"] }
     } else {
         path("/devices")                        { action: [GET: "getAllData"] }
         path("/config")                         { action: [GET: "renderConfig"]  }
@@ -265,5 +329,8 @@ mappings {
         path("/:id/command/:command")     		{ action: [POST: "deviceCommand"] }
         path("/:id/query")						{ action: [GET: "deviceQuery"] }
         path("/:id/attribute/:attribute") 		{ action: [GET: "deviceAttribute"] }
+        path("/subscribe")                      { action: [GET: "startSubscription"] }
+        path("/getUpdates")                     { action: [GET: "getChangeEvents"] }
+        path("/unsubscribe")                      { action: [GET: "endSubscription"] }
     }
 }
