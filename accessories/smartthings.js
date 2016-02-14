@@ -337,82 +337,83 @@ function SmartThingsAccessory(platform, device) {
             });
 
         this
-.getService(Service.Thermostat)
-.getCharacteristic(Characteristic.TargetTemperature)
-.on('get', function (callback) {
-var target_temp = undefined;
-switch (that.device.attributes.thermostatMode) {
-case "cool":
-target_temp = that.device.attributes.coolingSetpoint;
-break;
-case "emergency heat":
-case "heat":
-target_temp = that.device.attributes.heatingSetpoint;
-break;
-case "auto":
-// Choose closest target as single target
-var high = that.device.attributes.coolingSetpoint;
-var low = that.device.attributes.heatingSetpoint;
-var cur = that.device.attributes.temperature;
-target_temp = Math.abs(high - cur) < Math.abs(cur - low) ? high : low;
-break;
-default: //The above list should be inclusive, but we need to return something if they change stuff.
-target_temp = (that.device.attributes.heatingSetpoint + that.device.attributes.heatingSetpoint) / 2;
-break;
-}
-if (!target_temp) callback('Unknown');
-if (that.platform.temperature_unit == 'C')
-callback(null, target_temp);
-else
-callback(null, (target_temp - 32) / 1.8);
-})
-.on('set', function (value, callback) {
-//Convert the Celsius value to the appropriate unit for Smartthings
-var temp_requested = value;
-if (that.platform.temperature_unit == 'C')
-temp_requested = value;
-else
-temp_requested = ((value * 1.8) + 32);
-//Set the appropriate temperature unit based on the mode
-switch (that.device.attributes.thermostatMode) {
-case "cool":
-that.platform.api.runCommand(callback, that.deviceid, "setCoolingSetpoint", { value1: temp_requested });
-that.device.attributes.coolingSetpoint = temp_requested;
-break;
-case "emergency heat":
-case "heat":
-that.platform.api.runCommand(callback, that.deviceid, "setHeatingSetpoint", { value1: temp_requested });
-that.device.attributes.heatingSetpoint = temp_requested;
-break;
-case "auto":
-// Choose closest target as single target
-var high = that.device.attributes.coolingSetpoint;
-var low = that.device.attributes.heatingSetpoint;
-var cur = that.device.attributes.temperature;
-var isHighTemp = Math.abs(high - cur) < Math.abs(cur - low);
-if (isHighTemp) {
-high = temp_requested;
-} else {
-low = temp_requested;
-}
-that.platform.api.runCommand(null, that.deviceid, "setHeatingSetpoint", { value1: low });
-that.platform.api.runCommand(callback, that.deviceid, "setCoolingSetpoint", { value1: high });
-that.device.attributes.coolingSetpoint = high;
-that.device.attributes.heatingSetpoint = low;
-break;
-default: //The above list should be inclusive, but we need to return something if they change stuff.
-if (that.device.attributes.temperature > temp_requested) {
-that.platform.api.runCommand(null, that.deviceid, "setCoolingSetpoint", { value1: temp_requested });
-that.device.attributes.coolingSetpoint = temp_requested;
-that.platform.api.runCommand(callback, that.deviceid, "cool");
-} else {
-that.platform.api.runCommand(null, that.deviceid, "setHeatingSetpoint", { value1: temp_requested - 0.5 });
-that.device.attributes.heatingSetpoint = temp_requested;
-that.platform.api.runCommand(callback, that.deviceid, "heat");
-}
-break;
-}
-});
+            .getService(Service.Thermostat)
+            .getCharacteristic(Characteristic.TargetTemperature)
+            .on('get', function (callback) {
+                var temp = undefined;
+                switch (that.device.attributes.thermostatMode) {
+                    case "cool":
+                        temp = that.device.attributes.coolingSetpoint;
+                        break;
+                    case "emergency heat":
+                    case "heat":
+                        temp = that.device.attributes.heatingSetpoint;
+                        break;
+                    case "auto":
+                        // Choose closest target as single target
+                            var high = that.device.attributes.coolingSetpoint;
+                            var low = that.device.attributes.heatingSetpoint;
+                            var cur = that.device.attributes.temperature;
+                            temp = Math.abs(high - cur) < Math.abs(cur - low) ? high : low;
+                        break;
+                    default: //The above list should be inclusive, but we need to return something if they change stuff.
+                        temp = (that.device.attributes.heatingSetpoint + that.device.attributes.coolingSetpoint) / 2;
+                        break;
+                }
+                if (!temp) callback('Unknown');
+                if (that.platform.temperature_unit == 'C')
+                    callback(null, temp);
+                else
+                    callback(null, (temp - 32) / 1.8);
+            })
+            .on('set', function (value, callback) {
+                //Convert the Celsius value to the appropriate unit for Smartthings
+                var temp = value;
+                if (that.platform.temperature_unit == 'C')
+                    temp = value;
+                else
+                    temp = ((value * 1.8) + 32);
+                
+                //Set the appropriate temperature unit based on the mode
+                switch (that.device.attributes.thermostatMode) {
+                    case "cool":
+                        that.platform.api.runCommand(callback, that.deviceid, "setCoolingSetpoint", { value1: temp });
+                        that.device.attributes.coolingSetpoint = temp;
+                        break;
+                    case "emergency heat":
+                    case "heat":
+                        that.platform.api.runCommand(callback, that.deviceid, "setHeatingSetpoint", { value1: temp });
+                        that.device.attributes.heatingSetpoint = temp;
+                        break;
+                    case "auto":
+                        	// Choose closest target as single target
+                                var high = that.device.attributes.coolingSetpoint;
+                                var low = that.device.attributes.heatingSetpoint;
+                                var cur = that.device.attributes.temperature;
+                                var isHighTemp = Math.abs(high - cur) < Math.abs(cur - low);
+                                if (isHighTemp) {
+                                high = temp_requested;
+                                } else {
+                                low = temp_requested;
+                                }
+                                that.platform.api.runCommand(null, that.deviceid, "setHeatingSetpoint", { value1: low });
+                                that.platform.api.runCommand(callback, that.deviceid, "setCoolingSetpoint", { value1: high });
+                                that.device.attributes.coolingSetpoint = high;
+                                that.device.attributes.heatingSetpoint = low;
+                        break;
+                    default: //The above list should be inclusive, but we need to return something if they change stuff.
+                        if (that.device.attributes.temperature > temp) {
+                            that.platform.api.runCommand(null, that.deviceid, "setCoolingSetpoint", { value1: temp });
+                            that.device.attributes.coolingSetpoint = temp;
+                            that.platform.api.runCommand(callback, that.deviceid, "cool");
+                        } else {
+                            that.platform.api.runCommand(null, that.deviceid, "setHeatingSetpoint", { value1: temp - 0.5 });
+                            that.device.attributes.heatingSetpoint = temp;
+                            that.platform.api.runCommand(callback, that.deviceid, "heat");
+                        }
+                        break;
+                }
+            });
 
         this
             .getService(Service.Thermostat)
