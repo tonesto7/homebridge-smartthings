@@ -350,7 +350,11 @@ function SmartThingsAccessory(platform, device) {
                         temp = that.device.attributes.heatingSetpoint;
                         break;
                     case "auto":
-                        temp = (that.device.attributes.heatingSetpoint + that.device.attributes.coolingSetpoint) / 2;
+                        // Choose closest target as single target
+                            var high = that.device.attributes.coolingSetpoint;
+                            var low = that.device.attributes.heatingSetpoint;
+                            var cur = that.device.attributes.temperature;
+                            temp = Math.abs(high - cur) < Math.abs(cur - low) ? high : low;
                         break;
                     default: //The above list should be inclusive, but we need to return something if they change stuff.
                         temp = (that.device.attributes.heatingSetpoint + that.device.attributes.coolingSetpoint) / 2;
@@ -382,10 +386,20 @@ function SmartThingsAccessory(platform, device) {
                         that.device.attributes.heatingSetpoint = temp;
                         break;
                     case "auto":
-                        that.platform.api.runCommand(null, that.deviceid, "setHeatingSetpoint", { value1: temp - 0.5 });
-                        that.platform.api.runCommand(callback, that.deviceid, "setCoolingSetpoint", { value1: temp + 0.5 });
-                        that.device.attributes.coolingSetpoint = temp-0.5;
-                        that.device.attributes.heatingSetpoint = temp+0.5;
+                        	// Choose closest target as single target
+                                var high = that.device.attributes.coolingSetpoint;
+                                var low = that.device.attributes.heatingSetpoint;
+                                var cur = that.device.attributes.temperature;
+                                var isHighTemp = Math.abs(high - cur) < Math.abs(cur - low);
+                                if (isHighTemp) {
+                                high = temp;
+                                } else {
+                                low = temp;
+                                }
+                                that.platform.api.runCommand(null, that.deviceid, "setHeatingSetpoint", { value1: low });
+                                that.platform.api.runCommand(callback, that.deviceid, "setCoolingSetpoint", { value1: high });
+                                that.device.attributes.coolingSetpoint = high;
+                                that.device.attributes.heatingSetpoint = low;
                         break;
                     default: //The above list should be inclusive, but we need to return something if they change stuff.
                         if (that.device.attributes.temperature > temp) {
