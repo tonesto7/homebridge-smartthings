@@ -1,7 +1,10 @@
 # homebridge-smartthings
 
-Current npm version - 0.3.5
-Current Smartapp version - 0.3.6
+Current npm version - 0.4.1
+Current Smartapp version - 0.4.1
+
+If you are upgrading from a prior version, make sure you are using the latest Smartapp.
+If you put polling_seconds in your config.json file, remove it or increase it to a much larger setting.
 
 ## Installation
 
@@ -25,7 +28,12 @@ If you installed the previous update that doesn't allow selecting devices, you n
 
 * In the SmartThings App, goto "Marketplace" and select "SmartApps". At the bottom of the list, select "My Apps"
 * Select "JSON Complete API" from the list.
-* Tap the plus next to All Devices and then check off each device you would like to use. 
+* Tap the plus next to an appropriate device group and then check off each device you would like to use. 
+ * There are several categories because of the way Smartthings assigns capabilities.
+  * Almost all devices contain the Refresh capability and are under the "Most Devices" group
+  * Some sensors don't have a refresh and are under the "Sensor Devices" group.
+  * Some devices, mainly Virtual Switches, only have the Switch Capability and are in the "All Switches". 
+ * If you select the same device in multiple categories it will only be shown once in HomeKit, so you can safely check them all in all groups.
  * If a device isn't listed, let me know by submitting an issue on GitHub.
 * Tap Done and then Done.
 
@@ -43,11 +51,13 @@ If you installed the previous update that doesn't allow selecting devices, you n
         "app_url": "https://graph.api.smartthings.com:443/api/smartapps/installations/",
         "app_id": "THIS-SHOULD-BE-YOUR-APPID",
         "access_token": "THIS-SHOULD-BE-YOUR-TOKEN",
-        "polling_seconds": 10
+        "polling_seconds": 3600,
+        "update_seconds": 1
 	} 
 
 To get this information, open SmartThings on your phone, goto "My Home">"SmartApps">"JSON Complete API" and tap on Config
-polling_seconds is optional and defaults to 10. Smartthings can produce Rate Limit errors less than 5 seconds.
+polling_seconds is optional and defaults to 3600.
+update_seconds is optional and defaults to 1. At this speed, updates feel instant, but it can be reduced to 0.5 or increased up to 60.
 
 ##Reporting Devices for Development
 
@@ -61,6 +71,21 @@ polling_seconds is optional and defaults to 10. Smartthings can produce Rate Lim
 
 ## What's New
 I should have started this a while back, but didn't think to. I'll start keeping this updated.
+
+* GitHub Current
+ * Nothing Additional
+ 
+* 0.4.1
+ * [SmartApp] Fixed accidental changeover to incorrectly using atomicstate.
+ * [Plugin] Adjusted Thermostats to get/set the closes temperature when on auto instead of the average.
+ * [Plugin] Changed regular updates to use the Smartapps subscription system to reduce the data coming across the Internet and increase the speed of retrieving updates.
+ * [Plugin] Changed default polling_seconds to 3600 seconds to do a full refresh every hour.
+ * [Plugin] Added new option update_seconds to define how often to poll for subscription updates and set default to 1. This was also tested at 0.5.
+ * [Plugin] Fixed full refresh process to properly update the object with the new information.
+ * [Plugin] Fixed an error caused because the result from the api was never checked if it was undefined when looking to see if it produced an error.
+  
+* 0.4.0
+ * [SmartApp] Rolled in the code needed to subscribe to device events and record changes. In addition, if the client hasn't polled for events in a while, it will stop recording events until the client starts polling.
 
 * 0.3.6 
  * [SmartApp] Fixed a bug that caused none of the devices to be usable after the initial load.

@@ -21,12 +21,19 @@ function SmartThingsPlatform(log, config) {
 	this.app_id = config["app_id"];
 	this.access_token = config["access_token"];
 	
+    //This is how often it does a full refresh
     this.polling_seconds = config["polling_seconds"];
-	if (!this.polling_seconds) this.polling_seconds=10;
+	if (!this.polling_seconds) this.polling_seconds=3600;
+    
+    //This is how often it polls for subscription data.
+	this.update_seconds = config["update_seconds"];
+	if (!this.update_seconds) this.update_seconds=1;
+    
 	this.api = smartthings;
 	this.log = log;
 	this.deviceLookup = {};
     this.firstpoll = true;
+    this.attributeLookup = {}
 }
 
 SmartThingsPlatform.prototype = {
@@ -61,7 +68,7 @@ SmartThingsPlatform.prototype = {
 					}
 				}
 			}
-			if (myList.location) {
+			if (myList && myList.location) {
 				that.temperature_unit = myList.location.temperature_scale;
 			}
 			
@@ -69,7 +76,7 @@ SmartThingsPlatform.prototype = {
             } else if (myList.error) {
                 that.log ("Error received type " + myList.type+' - '+myList.message)
             } else { 
-                that.log ("Invalid Reponse from API call")}
+                that.log ("Invalid Response from API call")}
 			if (callback)
 				callback(foundAccessories)
             that.firstpoll=false;
@@ -85,7 +92,7 @@ SmartThingsPlatform.prototype = {
 		this.knownCapabilities = ["Switch","Color Control","Battery","Polling","Lock","Refresh","Lock Codes","Sensor","Actuator",
 									"Configuration","Switch Level","Temperature Measurement","Motion Sensor","Color Temperature",
 									"Contact Sensor","Three Axis","Acceleration Sensor","Momentary","Door Control","Garage Door Control",
-									"Relative Humidity Measurement","Presence Sensor","Thermostat"];
+									"Relative Humidity Measurement","Presence Sensor","Thermostat", "Energy Meter", "Power Meter"];
 		this.temperature_unit = 'F';
 		
 		smartthings.init(this.app_url, this.app_id, this.access_token);
@@ -94,7 +101,36 @@ SmartThingsPlatform.prototype = {
 			that.log("Unknown Capabilities: " + JSON.stringify(that.unknownCapabilities));
 			callback(foundAccessories);
 			setInterval(that.reloadData.bind(that), that.polling_seconds*1000);
+			setInterval(that.doIncrementalUpdate.bind(that), that.update_seconds*1000);
 		 });
-	}
-		
+	},
+    addAttributeUsage(attribute, deviceid, mycharacteristic) {
+        if (!this.attributeLookup[attribute])
+            this.attributeLookup[attribute]={};
+        if (!this.attributeLookup[attribute][deviceid])
+            this.attributeLookup[attribute][deviceid]=[];
+        this.attributeLookup[attribute][deviceid].push(mycharacteristic);
+    },
+	doIncrementalUpdate() {
+		var that=this;
+		var processIncrementalUpdate = function(data) {
+			if (data && data.attributes && data.attributes instanceof Array) {
+				for (var i = 0; i < data.attributes.length; i++) {
+					var attributeSet = data.attributes[i];
+					if (!((that.attributeLookup[attributeSet.attribute])&&(that.attributeLookup[attributeSet.attribute][attributeSet.device]))) return;
+					var myUsage = that.attributeLookup[attributeSet.attribute][attributeSet.device];
+					if (myUsage instanceof Array) {
+						for (var j = 0; j < myUsage.length; j++) {
+							var accessory = that.deviceLookup[attributeSet.device];
+							if (accessory) {
+								accessory.device.attributes[attributeSet.attribute]=attributeSet.value;
+								myUsage[j].getValue();
+							}
+						}
+					}		   
+				}
+			}
+		}
+        smartthings.getUpdates(processIncrementalUpdate);
+	}	
 };

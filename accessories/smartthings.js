@@ -6,7 +6,7 @@ var Accessory, Service, Characteristic, uuid, EnergyCharacteristics;
  *   SmartThings Accessory
  */
 
-module.exports = function (oAccessory, oService, oCharacteristic, ouuid) {
+module.exports = function(oAccessory, oService, oCharacteristic, ouuid) {
     if (oAccessory) {
         Accessory = oAccessory;
         Service = oService;
@@ -44,114 +44,80 @@ function SmartThingsAccessory(platform, device) {
             platform.unknownCapabilities.push(index);
     }
 
-
+    this.getaddService = function(Service) {
+        var myService = this.getService(Service);
+        if (!myService) myService = this.addService(Service);
+        return myService
+    };
 
     this.deviceGroup = "unknown"; //This way we can easily tell if we set a device group
-
-
+	var thisCharacteristic;
+	
     if (device.capabilities["Switch Level"] !== undefined) {
         if (device.commands.levelOpenClose) {
             //This is a Window Shade
             this.deviceGroup = "shades"
-            this.addService(Service.WindowCovering)
-                .getCharacteristic(Characteristic.TargetPosition)
-                .on('get', function (callback) {
-                    callback(null, that.device.attributes.level);
-                })
-                .on('set', function (value, callback) {
-                    that.platform.api.runCommand(callback, that.deviceid, "setLevel", { value1: value });
-                    //Update the status to show it as done. If it failed, this will revert back during the next update.
-                    that.device.attributes.level = value;
-                });
 
-            this.addService(Service.WindowCovering)
-                .getCharacteristic(Characteristic.CurrentPosition)
-                .on('get', function (callback) {
-                    callback(null, that.device.attributes.level);
-                });
+            thisCharacteristic = this.getaddService(Service.WindowCovering).getCharacteristic(Characteristic.TargetPosition)
+            thisCharacteristic.on('get', function(callback) { callback(null, that.device.attributes.level); });
+            thisCharacteristic.on('set', function(value, callback) { that.platform.api.runCommand(callback, that.deviceid, "setLevel", { value1: value }); });
+			that.platform.addAttributeUsage("level", this.deviceid, thisCharacteristic);
+
+            thisCharacteristic = this.getaddService(Service.WindowCovering).getCharacteristic(Characteristic.CurrentPosition)
+            thisCharacteristic.on('get', function(callback) { callback(null, that.device.attributes.level); });
+			that.platform.addAttributeUsage("level", this.deviceid, thisCharacteristic);
 
         } else {
             this.deviceGroup = "lights";
-            this.addService(Service.Lightbulb)
-                .getCharacteristic(Characteristic.On)
-                .on('get', function (callback) {
-                    callback(null, that.device.attributes.switch == "on");
-                })
-                .on('set', function (value, callback) {
+            thisCharacteristic = this.getaddService(Service.Lightbulb).getCharacteristic(Characteristic.On)
+            thisCharacteristic.on('get', function(callback) { callback(null, that.device.attributes.switch == "on"); });
+            thisCharacteristic.on('set', function(value, callback) {
                     if (value)
                         that.platform.api.runCommand(callback, that.deviceid, "on");
                     else
-                        that.platform.api.runCommand(callback, that.deviceid, "off");
-                    //Update the status to show it as done. If it failed, this will revert back during the next update.
-                    that.device.attributes.switch = "on";
-                });
+                        that.platform.api.runCommand(callback, that.deviceid, "off"); });
+			that.platform.addAttributeUsage("switch", this.deviceid, thisCharacteristic);
 
-            this.getService(Service.Lightbulb)
-                .getCharacteristic(Characteristic.Brightness)
-                .on('get', function (callback) {
-                    callback(null, that.device.attributes.level);
-                })
-                .on('set', function (value, callback) {
-                    that.platform.api.runCommand(callback, that.deviceid, "setLevel", {
-                        value1: value
-                    });
-                    //Update the status to show it as done. If it failed, this will revert back during the next update.
-                    that.device.attributes.level = value;
-                });
-
+            thisCharacteristic = this.getaddService(Service.Lightbulb).getCharacteristic(Characteristic.Brightness)
+            thisCharacteristic.on('get', function(callback) { callback(null, that.device.attributes.level); });
+            thisCharacteristic.on('set', function(value, callback) { that.platform.api.runCommand(callback, that.deviceid, "setLevel", { value1: value }); });
+			that.platform.addAttributeUsage("level", this.deviceid, thisCharacteristic);
+			
             if (device.capabilities["Color Control"] !== undefined) {
-                this.getService(Service.Lightbulb)
-                    .getCharacteristic(Characteristic.Hue)
-                    .on('get', function (callback) {
-                        callback(null, that.device.attributes.hue);
-                    })
-                    .on('set', function (value, callback) {
-                        that.platform.api.runCommand(callback, that.deviceid, "setHue", {
-                            value1: value
-                        });
-                        //Update the status to show it as done. If it failed, this will revert back during the next update.
-                        that.device.attributes.hue = value;
-                    });
+				thisCharacteristic = this.getaddService(Service.Lightbulb).getCharacteristic(Characteristic.Hue)
+                thisCharacteristic.on('get', function(callback) { callback(null, that.device.attributes.hue); });
+                thisCharacteristic.on('set', function(value, callback) { that.platform.api.runCommand(callback, that.deviceid, "setHue", { value1: value }); });
+				that.platform.addAttributeUsage("hue", this.deviceid, thisCharacteristic);
 
-                this.getService(Service.Lightbulb)
-                    .getCharacteristic(Characteristic.Saturation)
-                    .on('get', function (callback) {
-                        callback(null, that.device.attributes.saturation);
-                    })
-                    .on('set', function (value, callback) {
-                        that.platform.api.runCommand(callback, that.deviceid, "setSaturation", {
-                            value1: value
-                        });
-                        //Update the status to show it as done. If it failed, this will revert back during the next update.
-                        that.device.attributes.saturation = value;
-                    });
+                thisCharacteristic = this.getaddService(Service.Lightbulb).getCharacteristic(Characteristic.Saturation)
+                thisCharacteristic.on('get', function(callback) { callback(null, that.device.attributes.saturation); });
+                thisCharacteristic.on('set', function(value, callback) { that.platform.api.runCommand(callback, that.deviceid, "setSaturation", { value1: value }); });
+				that.platform.addAttributeUsage("saturation", this.deviceid, thisCharacteristic);
             }
         }
     }
 
     if (device.capabilities["Garage Door Control"] !== undefined) {
         this.deviceGroup = "garage_doors";
-        this.addService(Service.GarageDoorOpener)
-            .getCharacteristic(Characteristic.TargetDoorState)
-            .on('get', function (callback) {
+		
+        thisCharacteristic = this.getaddService(Service.GarageDoorOpener).getCharacteristic(Characteristic.TargetDoorState)
+        thisCharacteristic.on('get', function(callback) {
                 if (that.device.attributes.door == 'closed' || that.device.attributes.door == 'closing')
                     callback(null, Characteristic.TargetDoorState.CLOSED);
                 else if (that.device.attributes.door == 'open' || that.device.attributes.door == 'opening')
-                    callback(null, Characteristic.TargetDoorState.OPEN);
-            })
-            .on('set', function (value, callback) {
+                    callback(null, Characteristic.TargetDoorState.OPEN); });
+        thisCharacteristic.on('set', function(value, callback) {
                 if (value == Characteristic.TargetDoorState.OPEN) {
                     that.platform.api.runCommand(callback, that.deviceid, "open");
                     that.device.attributes.door = "opening";
                 } else if (value == Characteristic.TargetDoorState.CLOSED) {
                     that.platform.api.runCommand(callback, that.deviceid, "close");
                     that.device.attributes.door = "closing";
-                }
-            });
-
-        this.getService(Service.GarageDoorOpener)
-            .getCharacteristic(Characteristic.CurrentDoorState)
-            .on('get', function (callback) {
+                } });
+		that.platform.addAttributeUsage("door", this.deviceid, thisCharacteristic);
+			
+        thisCharacteristic = this.getService(Service.GarageDoorOpener).getCharacteristic(Characteristic.CurrentDoorState)
+        thisCharacteristic.on('get', function(callback) {
                 switch (that.device.attributes.door) {
                     case 'open':
                         callback(null, Characteristic.TargetDoorState.OPEN);
@@ -170,16 +136,16 @@ function SmartThingsAccessory(platform, device) {
                         break;
                 }
             });
-
-        this.getService(Service.GarageDoorOpener)
-            .setCharacteristic(Characteristic.ObstructionDetected, false);
+		that.platform.addAttributeUsage("door", this.deviceid, thisCharacteristic);
+			
+        this.getService(Service.GarageDoorOpener).setCharacteristic(Characteristic.ObstructionDetected, false);
     }
 
     if (device.capabilities["Lock"] !== undefined) {
         this.deviceGroup = "locks";
-        this.addService(Service.LockMechanism)
-            .getCharacteristic(Characteristic.LockCurrentState)
-            .on('get', function (callback) {
+		
+        thisCharacteristic = this.getaddService(Service.LockMechanism).getCharacteristic(Characteristic.LockCurrentState)
+        thisCharacteristic.on('get', function(callback) {
                 switch (that.device.attributes.lock) {
                     case 'locked':
                         callback(null, Characteristic.LockCurrentState.SECURED);
@@ -190,13 +156,11 @@ function SmartThingsAccessory(platform, device) {
                     default:
                         callback(null, Characteristic.LockCurrentState.UNKNOWN);
                         break;
-                }
-            });
-
-        this
-            .getService(Service.LockMechanism)
-            .getCharacteristic(Characteristic.LockTargetState)
-            .on('get', function (callback) {
+                } });
+		that.platform.addAttributeUsage("lock", this.deviceid, thisCharacteristic);
+		
+        thisCharacteristic = this.getService(Service.LockMechanism).getCharacteristic(Characteristic.LockTargetState)
+        thisCharacteristic.on('get', function(callback) {
                 switch (that.device.attributes.lock) {
                     case 'locked':
                         callback(null, Characteristic.LockCurrentState.SECURED);
@@ -207,9 +171,8 @@ function SmartThingsAccessory(platform, device) {
                     default:
                         callback(null, Characteristic.LockCurrentState.UNKNOWN);
                         break;
-                }
-            })
-            .on('set', function (value, callback) {
+                } });
+        thisCharacteristic.on('set', function(value, callback) {
                 switch (value) {
                     case Characteristic.LockTargetState.SECURED:
                         that.platform.api.runCommand(callback, that.deviceid, "lock");
@@ -219,17 +182,141 @@ function SmartThingsAccessory(platform, device) {
                         that.platform.api.runCommand(callback, that.deviceid, "unlock");
                         that.device.attributes.lock = "unlocked";
                         break;
-                }
-            });
+                } });
+		that.platform.addAttributeUsage("lock", this.deviceid, thisCharacteristic);
+		
     }
 
-    if (device.capabilities["Thermostat"] !== undefined) {
+    if ((device.capabilities["Smoke Detector"] !== undefined) && (that.device.attributes.smoke)) {
+        this.deviceGroup = "detectors";
+
+        thisCharacteristic = this.getService(Service.SmokeSensor).getCharacteristic(Characteristic.SmokeDetected)
+        thisCharacteristic.on('get', function(callback) {
+                if (that.device.attributes.smoke == 'clear')
+                    callback(null, Characteristic.SmokeDetected.SMOKE_NOT_DETECTED);
+                else
+                    callback(null, Characteristic.SmokeDetected.SMOKE_DETECTED);
+            });
+ 		that.platform.addAttributeUsage("smoke", this.deviceid, thisCharacteristic);
+   }
+
+    if ((device.capabilities["Carbon Monoxide Detector"] !== undefined) && (that.device.attributes.carbonMonoxide)) {
+        this.deviceGroup = "detectors";
+        
+		thisCharacteristic = this.getService(Service.CarbonMonoxideSensor).getCharacteristic(Characteristic.CarbonMonoxideDetected)
+        thisCharacteristic.on('get', function(callback) {
+                if (that.device.attributes.carbonMonoxide == 'clear')
+                    callback(null, Characteristic.CarbonMonoxideDetected.CO_LEVELS_NORMAL);
+                else
+                    callback(null, Characteristic.CarbonMonoxideDetected.CO_LEVELS_ABNORMAL);
+            });
+ 		that.platform.addAttributeUsage("carbonMonoxide", this.deviceid, thisCharacteristic);
+    }
+
+    if (device.capabilities["Motion Sensor"] !== undefined) {
+        if (this.deviceGroup == 'unknown') this.deviceGroup = "sensor";
+        
+		thisCharacteristic = this.getaddService(Service.MotionSensor).getCharacteristic(Characteristic.MotionDetected)
+        thisCharacteristic.on('get', function(callback) { callback(null, (that.device.attributes.motion == "active")); });
+ 		that.platform.addAttributeUsage("motion", this.deviceid, thisCharacteristic);
+    }
+
+    if (device.capabilities["Presence Sensor"] !== undefined) {
+        if (this.deviceGroup == 'unknown') this.deviceGroup = "sensor";
+		
+        thisCharacteristic = this.getaddService(Service.OccupancySensor).getCharacteristic(Characteristic.OccupancyDetected)
+        thisCharacteristic.on('get', function(callback) { callback(null, (that.device.attributes.presence == "present")); });
+ 		that.platform.addAttributeUsage("presence", this.deviceid, thisCharacteristic);
+    }
+
+    if (device.capabilities["Relative Humidity Measurement"] !== undefined) {
+        if (this.deviceGroup == 'unknown') this.deviceGroup = "sensor";
+        thisCharacteristic = this.getaddService(Service.HumiditySensor).getCharacteristic(Characteristic.CurrentRelativeHumidity)
+        thisCharacteristic.on('get', function(callback) { callback(null, (that.device.attributes.humidity)); });
+		that.platform.addAttributeUsage("humidity", this.deviceid, thisCharacteristic);
+    }
+
+    if (device.capabilities["Temperature Measurement"] !== undefined) {
+        if (this.deviceGroup == 'unknown') this.deviceGroup = "sensor";
+        thisCharacteristic = this.getaddService(Service.TemperatureSensor).getCharacteristic(Characteristic.CurrentTemperature)
+        thisCharacteristic.on('get', function(callback) {
+                if (that.platform.temperature_unit == 'C')
+                    callback(null, that.device.attributes.temperature);
+                else
+                    callback(null, (that.device.attributes.temperature - 32) / 1.8);
+            });
+		that.platform.addAttributeUsage("temperature", this.deviceid, thisCharacteristic);
+    }
+
+    if (device.capabilities["Contact Sensor"] !== undefined) {
+        if (this.deviceGroup == 'unknown') this.deviceGroup = "sensor";
+        thisCharacteristic = this.getaddService(Service.ContactSensor).getCharacteristic(Characteristic.ContactSensorState)
+        thisCharacteristic.on('get', function(callback) {
+                if (that.device.attributes.contact == "closed")
+                    callback(null, Characteristic.ContactSensorState.CONTACT_DETECTED);
+                else
+                    callback(null, Characteristic.ContactSensorState.CONTACT_NOT_DETECTED);
+
+            });
+ 		that.platform.addAttributeUsage("contact", this.deviceid, thisCharacteristic);
+   }
+
+    if (device.capabilities["Battery"] !== undefined) {
+        thisCharacteristic = this.getaddService(Service.BatteryService).getCharacteristic(Characteristic.BatteryLevel)
+        thisCharacteristic.on('get', function(callback) { callback(null, that.device.attributes.battery); });
+		that.platform.addAttributeUsage("battery", this.deviceid, thisCharacteristic);
+
+        thisCharacteristic = this.getService(Service.BatteryService).getCharacteristic(Characteristic.StatusLowBattery)
+        thisCharacteristic.on('get', function(callback) {
+                if (that.device.attributes.battery < 0.20)
+                    callback(null, Characteristic.StatusLowBattery.BATTERY_LEVEL_LOW);
+                else
+                    callback(null, Characteristic.StatusLowBattery.BATTERY_LEVEL_NORMAL);
+            });
+
+        this.getService(Service.BatteryService).setCharacteristic(Characteristic.ChargingState, Characteristic.ChargingState.NOT_CHARGING);
+		that.platform.addAttributeUsage("battery", this.deviceid, thisCharacteristic);
+    }
+
+    if (device.capabilities["Switch"] !== undefined && this.deviceGroup == "unknown") {
+        this.deviceGroup = "switch";
+        thisCharacteristic = this.getaddService(Service.Switch).getCharacteristic(Characteristic.On)
+        thisCharacteristic.on('get', function(callback) { callback(null, that.device.attributes.switch == "on"); })
+        thisCharacteristic.on('set', function(value, callback) {
+                if (value)
+                    that.platform.api.runCommand(callback, that.deviceid, "on");
+                else
+                    that.platform.api.runCommand(callback, that.deviceid, "off");
+            });
+		that.platform.addAttributeUsage("switch", this.deviceid, thisCharacteristic);
+    }
+
+    if (device.capabilities["Energy Meter"] !== undefined) {
+        this.deviceGroup = 'EnergyMeter';
+        thisCharacteristic = this.getaddService(Service.Outlet).addCharacteristic(EnergyCharacteristics.TotalConsumption1)
+        thisCharacteristic.on('get', function(callback) { callback(null, that.device.attributes.energy); });
+		that.platform.addAttributeUsage("energy", this.deviceid, thisCharacteristic);
+	}
+
+    if (device.capabilities["Power Meter"] !== undefined) {	
+        thisCharacteristic = this.getaddService(Service.Outlet).addCharacteristic(EnergyCharacteristics.CurrentConsumption1)
+        thisCharacteristic.on('get', function(callback) { callback(null, that.device.attributes.power); });
+		that.platform.addAttributeUsage("power", this.deviceid, thisCharacteristic);
+    }
+
+    if (device.capabilities["Acceleration Sensor"] !== undefined) {
+        if (this.deviceGroup == 'unknown') this.deviceGroup = "sensor";
+    }
+
+    if (device.capabilities["Three Axis"] !== undefined) {
+        if (this.deviceGroup == 'unknown') this.deviceGroup = "sensor";
+    }
+
+	if (device.capabilities["Thermostat"] !== undefined) {
         this.deviceGroup = "thermostats";
-        this
-            .addService(Service.Thermostat)
-            .getCharacteristic(Characteristic.CurrentHeatingCoolingState)
-            .on('get', function (callback) {
-                //if (that.device.attributes.powered) { //I need to verify this changes when the thermostat clicks on.
+        
+		thisCharacteristic = this.getaddService(Service.Thermostat).getCharacteristic(Characteristic.CurrentHeatingCoolingState)
+        thisCharacteristic.on('get', function(callback) {
                 switch (that.device.attributes.thermostatOperatingState) {
                     case "pending cool":
                     case "cooling":
@@ -240,18 +327,16 @@ function SmartThingsAccessory(platform, device) {
                         callback(null, Characteristic.CurrentHeatingCoolingState.HEAT);
                         break;
                     default: //The above list should be inclusive, but we need to return something if they change stuff.
+                        //TODO: Double check if Smartthings can send "auto" as operatingstate. I don't think it can.
                         callback(null, Characteristic.CurrentHeatingCoolingState.OFF);
                         break;
                 }
-                //} else //For now, powered being false means it is off
-                //	callback(null, Characteristic.CurrentHeatingCoolingState.OFF);
             });
+		that.platform.addAttributeUsage("thermostatOperatingState", this.deviceid, thisCharacteristic);
 
         //Handle the Target State
-        this
-            .getService(Service.Thermostat)
-            .getCharacteristic(Characteristic.TargetHeatingCoolingState)
-            .on('get', function (callback) {
+        thisCharacteristic = this.getaddService(Service.Thermostat).getCharacteristic(Characteristic.TargetHeatingCoolingState)
+        thisCharacteristic.on('get', function(callback) {
                 switch (that.device.attributes.thermostatMode) {
                     case "cool":
                         callback(null, Characteristic.TargetHeatingCoolingState.COOL);
@@ -268,7 +353,7 @@ function SmartThingsAccessory(platform, device) {
                         break;
                 }
             })
-            .on('set', function (value, callback) {
+        thisCharacteristic.on('set', function(value, callback) {
                 switch (value) {
                     case Characteristic.TargetHeatingCoolingState.COOL:
                         that.platform.api.runCommand(callback, that.deviceid, "cool");
@@ -288,58 +373,27 @@ function SmartThingsAccessory(platform, device) {
                         break;
                 }
             });
+		that.platform.addAttributeUsage("thermostatMode", this.deviceid, thisCharacteristic);
 
         if (device.capabilities["Relative Humidity Measurement"] !== undefined) {
-            this
-                .getService(Service.Thermostat)
-                .getCharacteristic(Characteristic.CurrentRelativeHumidity)
-                .on('get', function (callback) {
+            thisCharacteristic = this.getaddService(Service.Thermostat).getCharacteristic(Characteristic.CurrentRelativeHumidity)
+            thisCharacteristic.on('get', function(callback) {
                     callback(null, that.device.attributes.humidity);
                 });
+			that.platform.addAttributeUsage("humidity", this.deviceid, thisCharacteristic);
         }
 
-
-        if ((device.capabilities["Smoke Detector"] !== undefined) && (that.device.attributes.smoke)) {
-            this.deviceGroup = "dectors";
-            this
-                .getService(Service.SmokeSensor)
-                .getCharacteristic(Characteristic.SmokeDetected)
-                .on('get', function (callback) {
-                    if (that.device.attributes.smoke == 'clear')
-                        callback(null, Characteristic.SmokeDetected.SMOKE_NOT_DETECTED);
-                    else
-                        callback(null, Characteristic.SmokeDetected.SMOKE_DETECTED);
-                });
-        }
-
-
-        if ((device.capabilities["Carbon Monoxide Detector"] !== undefined) && (that.device.attributes.carbonMonoxide)) {
-            this.deviceGroup = "dectors";
-            this
-                .getService(Service.CarbonMonoxideSensor)
-                .getCharacteristic(Characteristic.CarbonMonoxideDetected)
-                .on('get', function (callback) {
-                    if (that.device.attributes.carbonMonoxide == 'clear')
-                        callback(null, Characteristic.CarbonMonoxideDetected.CO_LEVELS_NORMAL);
-                    else
-                        callback(null, Characteristic.CarbonMonoxideDetected.CO_LEVELS_ABNORMAL);
-                });
-        }
-
-        this
-            .getService(Service.Thermostat)
-            .getCharacteristic(Characteristic.CurrentTemperature)
-            .on('get', function (callback) {
+        thisCharacteristic = this.getaddService(Service.Thermostat).getCharacteristic(Characteristic.CurrentTemperature)
+        thisCharacteristic.on('get', function(callback) {
                 if (that.platform.temperature_unit == 'C')
                     callback(null, that.device.attributes.temperature);
                 else
                     callback(null, (that.device.attributes.temperature - 32) / 1.8);
             });
+		that.platform.addAttributeUsage("temperature", this.deviceid, thisCharacteristic);
 
-        this
-            .getService(Service.Thermostat)
-            .getCharacteristic(Characteristic.TargetTemperature)
-            .on('get', function (callback) {
+        thisCharacteristic = this.getaddService(Service.Thermostat).getCharacteristic(Characteristic.TargetTemperature)
+        thisCharacteristic.on('get', function(callback) {
                 var temp = undefined;
                 switch (that.device.attributes.thermostatMode) {
                     case "cool":
@@ -349,15 +403,12 @@ function SmartThingsAccessory(platform, device) {
                     case "heat":
                         temp = that.device.attributes.heatingSetpoint;
                         break;
-                    case "auto":
-                        // Choose closest target as single target
-                            var high = that.device.attributes.coolingSetpoint;
-                            var low = that.device.attributes.heatingSetpoint;
-                            var cur = that.device.attributes.temperature;
-                            temp = Math.abs(high - cur) < Math.abs(cur - low) ? high : low;
-                        break;
-                    default: //The above list should be inclusive, but we need to return something if they change stuff.
-                        temp = (that.device.attributes.heatingSetpoint + that.device.attributes.coolingSetpoint) / 2;
+                    default: //This should only refer to auto
+                       // Choose closest target as single target
+                        var high = that.device.attributes.coolingSetpoint;
+                        var low = that.device.attributes.heatingSetpoint;
+                        var cur = that.device.attributes.temperature;
+                        temp = Math.abs(high - cur) < Math.abs(cur - low) ? high : low;
                         break;
                 }
                 if (!temp) callback('Unknown');
@@ -366,231 +417,106 @@ function SmartThingsAccessory(platform, device) {
                 else
                     callback(null, (temp - 32) / 1.8);
             })
-            .on('set', function (value, callback) {
+        thisCharacteristic.on('set', function(value, callback) {
                 //Convert the Celsius value to the appropriate unit for Smartthings
                 var temp = value;
                 if (that.platform.temperature_unit == 'C')
                     temp = value;
                 else
                     temp = ((value * 1.8) + 32);
-                
+
                 //Set the appropriate temperature unit based on the mode
                 switch (that.device.attributes.thermostatMode) {
                     case "cool":
-                        that.platform.api.runCommand(callback, that.deviceid, "setCoolingSetpoint", { value1: temp });
+                        that.platform.api.runCommand(callback, that.deviceid, "setCoolingSetpoint", {
+                            value1: temp
+                        });
                         that.device.attributes.coolingSetpoint = temp;
                         break;
                     case "emergency heat":
                     case "heat":
-                        that.platform.api.runCommand(callback, that.deviceid, "setHeatingSetpoint", { value1: temp });
+                        that.platform.api.runCommand(callback, that.deviceid, "setHeatingSetpoint", {
+                            value1: temp
+                        });
                         that.device.attributes.heatingSetpoint = temp;
                         break;
-                    case "auto":
-                        	// Choose closest target as single target
-                                var high = that.device.attributes.coolingSetpoint;
-                                var low = that.device.attributes.heatingSetpoint;
-                                var cur = that.device.attributes.temperature;
-                                var isHighTemp = Math.abs(high - cur) < Math.abs(cur - low);
-                                if (isHighTemp) {
-                                high = temp;
-                                } else {
-                                low = temp;
-                                }
-                                that.platform.api.runCommand(null, that.deviceid, "setHeatingSetpoint", { value1: low });
-                                that.platform.api.runCommand(callback, that.deviceid, "setCoolingSetpoint", { value1: high });
-                                that.device.attributes.coolingSetpoint = high;
-                                that.device.attributes.heatingSetpoint = low;
-                        break;
-                    default: //The above list should be inclusive, but we need to return something if they change stuff.
-                        if (that.device.attributes.temperature > temp) {
-                            that.platform.api.runCommand(null, that.deviceid, "setCoolingSetpoint", { value1: temp });
-                            that.device.attributes.coolingSetpoint = temp;
-                            that.platform.api.runCommand(callback, that.deviceid, "cool");
+                    default: //This should only refer to auto
+                       	// Choose closest target as single target
+                        var high = that.device.attributes.coolingSetpoint;
+                        var low = that.device.attributes.heatingSetpoint;
+                        var cur = that.device.attributes.temperature;
+                        var isHighTemp = Math.abs(high - cur) < Math.abs(cur - low);
+                        if (isHighTemp) {
+                           that.platform.api.runCommand(callback, that.deviceid, "setCoolingSetpoint", { value1: temp });
                         } else {
-                            that.platform.api.runCommand(null, that.deviceid, "setHeatingSetpoint", { value1: temp - 0.5 });
-                            that.device.attributes.heatingSetpoint = temp;
-                            that.platform.api.runCommand(callback, that.deviceid, "heat");
+                           that.platform.api.runCommand(null, that.deviceid, "setHeatingSetpoint", { value1: temp });
                         }
                         break;
                 }
             });
+		that.platform.addAttributeUsage("thermostatMode", this.deviceid, thisCharacteristic);
+		that.platform.addAttributeUsage("coolingSetpoint", this.deviceid, thisCharacteristic);
+		that.platform.addAttributeUsage("heatingSetpoint", this.deviceid, thisCharacteristic);
+		that.platform.addAttributeUsage("temperature", this.deviceid, thisCharacteristic);
 
-        this
-            .getService(Service.Thermostat)
-            .getCharacteristic(Characteristic.TemperatureDisplayUnits)
-            .on('get', function (callback) {
+        thisCharacteristic = this.getaddService(Service.Thermostat).getCharacteristic(Characteristic.TemperatureDisplayUnits)
+        thisCharacteristic.on('get', function(callback) {
                 if (platform.temperature_unit == "C")
                     callback(null, Characteristic.TemperatureDisplayUnits.CELSIUS);
                 else
                     callback(null, Characteristic.TemperatureDisplayUnits.FAHRENHEIT);
             });
+		//that.platform.addAttributeUsage("temperature_unit", "platform", thisCharacteristic);
 
-        this
-            .getService(Service.Thermostat)
-            .getCharacteristic(Characteristic.HeatingThresholdTemperature)
-            .on('get', function (callback) {
+        thisCharacteristic = this.getaddService(Service.Thermostat).getCharacteristic(Characteristic.HeatingThresholdTemperature)
+        thisCharacteristic.on('get', function(callback) {
                 if (that.platform.temperature_unit == 'C')
                     callback(null, that.device.attributes.heatingSetpoint);
                 else
                     callback(null, (that.device.attributes.heatingSetpoint - 32) / 1.8);
             })
-            .on('set', function (value, callback) {
+        thisCharacteristic.on('set', function(value, callback) {
                 //Convert the Celsius value to the appropriate unit for Smartthings
                 var temp = value;
                 if (that.platform.temperature_unit == 'C')
                     temp = value;
                 else
                     temp = ((value * 1.8) + 32);
-                that.platform.api.runCommand(callback, that.deviceid, "setHeatingSetpoint", { value1: temp });
+                that.platform.api.runCommand(callback, that.deviceid, "setHeatingSetpoint", {
+                    value1: temp
+                });
                 that.device.attributes.heatingSetpoint = temp;
             });
+		that.platform.addAttributeUsage("heatingSetpoint", this.deviceid, thisCharacteristic);
 
-        this
-            .getService(Service.Thermostat)
-            .getCharacteristic(Characteristic.CoolingThresholdTemperature)
-            .on('get', function (callback) {
+        thisCharacteristic = this.getaddService(Service.Thermostat).getCharacteristic(Characteristic.CoolingThresholdTemperature)
+        thisCharacteristic.on('get', function(callback) {
                 if (that.platform.temperature_unit == 'C')
                     callback(null, that.device.attributes.coolingSetpoint);
                 else
                     callback(null, (that.device.attributes.coolingSetpoint - 32) / 1.8);
-            })
-            .on('set', function (value, callback) {
+            });
+        thisCharacteristic.on('set', function(value, callback) {
                 //Convert the Celsius value to the appropriate unit for Smartthings
                 var temp = value;
                 if (that.platform.temperature_unit == 'C')
                     temp = value;
                 else
                     temp = ((value * 1.8) + 32);
-                that.platform.api.runCommand(callback, that.deviceid, "setCoolingSetpoint", { value1: temp });
+                that.platform.api.runCommand(callback, that.deviceid, "setCoolingSetpoint", {
+                    value1: temp
+                });
                 that.device.attributes.coolingSetpoint = temp;
-            });
+ 		   });
+		that.platform.addAttributeUsage("coolingSetpoint", this.deviceid, thisCharacteristic);
     }
-
-    if (device.capabilities["Motion Sensor"] !== undefined) {
-        if (this.deviceGroup == 'unknown') this.deviceGroup = "sensor";
-        this.addService(Service.MotionSensor)
-            .getCharacteristic(Characteristic.MotionDetected)
-            .on('get', function (callback) {
-                callback(null, (that.device.attributes.motion == "active"));
-            });
-    }
-
-    if (device.capabilities["Presence Sensor"] !== undefined) {
-        if (this.deviceGroup == 'unknown') this.deviceGroup = "sensor";
-        this.addService(Service.OccupancySensor)
-            .getCharacteristic(Characteristic.OccupancyDetected)
-            .on('get', function (callback) {
-                callback(null, (that.device.attributes.presence == "present"));
-            });
-    }
-
-
-    if (device.capabilities["Relative Humidity Measurement"] !== undefined) {
-        if (this.deviceGroup == 'unknown') this.deviceGroup = "sensor";
-        this.addService(Service.HumiditySensor)
-            .getCharacteristic(Characteristic.CurrentRelativeHumidity)
-            .on('get', function (callback) {
-                //Need to add logic to determine if this is in C or F
-                callback(null, (that.device.attributes.humidity));
-            });
-    }
-
-    if (device.capabilities["Temperature Measurement"] !== undefined) {
-        if (this.deviceGroup == 'unknown') this.deviceGroup = "sensor";
-        this.addService(Service.TemperatureSensor)
-            .getCharacteristic(Characteristic.CurrentTemperature)
-            .on('get', function (callback) {
-                if (that.platform.temperature_unit == 'C')
-                    callback(null, that.device.attributes.temperature);
-                else
-                    callback(null, (that.device.attributes.temperature - 32) / 1.8);
-            });
-    }
-
-    if (device.capabilities["Contact Sensor"] !== undefined) {
-        if (this.deviceGroup == 'unknown') this.deviceGroup = "sensor";
-        this.addService(Service.ContactSensor)
-            .getCharacteristic(Characteristic.ContactSensorState)
-            .on('get', function (callback) {
-                if (that.device.attributes.contact == "closed")
-                    callback(null, Characteristic.ContactSensorState.CONTACT_DETECTED);
-                else
-                    callback(null, Characteristic.ContactSensorState.CONTACT_NOT_DETECTED);
-
-            });
-    }
-
-    if (device.capabilities["Battery"] !== undefined) {
-        this.addService(Service.BatteryService)
-            .getCharacteristic(Characteristic.BatteryLevel)
-            .on('get', function (callback) {
-                callback(null, that.device.attributes.battery);
-            });
-
-        this.getService(Service.BatteryService)
-            .getCharacteristic(Characteristic.StatusLowBattery)
-            .on('get', function (callback) {
-                if (that.device.attributes.battery < 0.20)
-                    callback(null, Characteristic.StatusLowBattery.BATTERY_LEVEL_LOW);
-                else
-                    callback(null, Characteristic.StatusLowBattery.BATTERY_LEVEL_NORMAL);
-            });
-
-        this.getService(Service.BatteryService)
-            .setCharacteristic(Characteristic.ChargingState, Characteristic.ChargingState.NOT_CHARGING);
-
-    }
-
-    if (device.capabilities["Switch"] !== undefined && this.deviceGroup == "unknown") {
-        this.deviceGroup = "switch";
-        this.addService(Service.Switch)
-            .getCharacteristic(Characteristic.On)
-            .on('get', function (callback) {
-                callback(null, that.device.attributes.switch == "on");
-            })
-            .on('set', function (value, callback) {
-                if (value)
-                    that.platform.api.runCommand(callback, that.deviceid, "on");
-                else
-                    that.platform.api.runCommand(callback, that.deviceid, "off");
-                //Update the status to show it as done. If it failed, this will revert back during the next update.
-                that.device.attributes.switch = "on";
-            });
-
-    }
-
-    if (device.capabilities["Energy Meter"] !==undefined) {
-        this.deviceGroup='EnergyMeter';
-        this.addService(Service.Outlet)
-            .addCharacteristic(EnergyCharacteristics.TotalConsumption1)
-            .on('get', function (callback) {
-                callback(null, that.device.attributes.energy);
-            });
-        this.getService(Service.Outlet)
-            .addCharacteristic(EnergyCharacteristics.CurrentConsumption1)
-            .on('get', function (callback) {
-                callback(null, that.device.attributes.power);
-            });
-
-        
-    }
-
-    if (device.capabilities["Acceleration Sensor"] !== undefined) {
-        if (this.deviceGroup == 'unknown') this.deviceGroup = "sensor";
-    }
-
-    if (device.capabilities["Three Axis"] !== undefined) {
-        if (this.deviceGroup == 'unknown') this.deviceGroup = "sensor";
-    }
-
     this.loadData(device, this);
 }
 
 function loadData(data, myObject) {
-    var that=this;
+    var that = this;
     if (myObject !== undefined) that = myObject;
     if (data !== undefined) {
-        that.device=data;
         for (var i = 0; i < that.services.length; i++) {
             for (var j = 0; j < that.services[i].characteristics.length; j++) {
                 that.services[i].characteristics[j].getValue();
@@ -598,7 +524,7 @@ function loadData(data, myObject) {
         }
     } else {
         this.log.debug("Fetching Device Data")
-        this.platform.api.getDevice(this.deviceid, function (data) {
+        this.platform.api.getDevice(this.deviceid, function(data) {
             if (data === undefined) return;
             this.device = data;
             for (var i = 0; i < that.services.length; i++) {
@@ -609,6 +535,8 @@ function loadData(data, myObject) {
         });
     }
 }
+
+
 
 function getServices() {
     return this.services;
