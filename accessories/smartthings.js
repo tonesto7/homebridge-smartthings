@@ -116,7 +116,7 @@ function SmartThingsAccessory(platform, device) {
                 } });
 		that.platform.addAttributeUsage("door", this.deviceid, thisCharacteristic);
 			
-        thisCharacteristic = this.getService(Service.GarageDoorOpener).getCharacteristic(Characteristic.CurrentDoorState)
+        thisCharacteristic = this.getaddService(Service.GarageDoorOpener).getCharacteristic(Characteristic.CurrentDoorState)
         thisCharacteristic.on('get', function(callback) {
                 switch (that.device.attributes.door) {
                     case 'open':
@@ -138,7 +138,7 @@ function SmartThingsAccessory(platform, device) {
             });
 		that.platform.addAttributeUsage("door", this.deviceid, thisCharacteristic);
 			
-        this.getService(Service.GarageDoorOpener).setCharacteristic(Characteristic.ObstructionDetected, false);
+        this.getaddService(Service.GarageDoorOpener).setCharacteristic(Characteristic.ObstructionDetected, false);
     }
 
     if (device.capabilities["Lock"] !== undefined) {
@@ -159,7 +159,7 @@ function SmartThingsAccessory(platform, device) {
                 } });
 		that.platform.addAttributeUsage("lock", this.deviceid, thisCharacteristic);
 		
-        thisCharacteristic = this.getService(Service.LockMechanism).getCharacteristic(Characteristic.LockTargetState)
+        thisCharacteristic = this.getaddService(Service.LockMechanism).getCharacteristic(Characteristic.LockTargetState)
         thisCharacteristic.on('get', function(callback) {
                 switch (that.device.attributes.lock) {
                     case 'locked':
@@ -190,7 +190,7 @@ function SmartThingsAccessory(platform, device) {
     if ((device.capabilities["Smoke Detector"] !== undefined) && (that.device.attributes.smoke)) {
         this.deviceGroup = "detectors";
 
-        thisCharacteristic = this.getService(Service.SmokeSensor).getCharacteristic(Characteristic.SmokeDetected)
+        thisCharacteristic = this.getaddService(Service.SmokeSensor).getCharacteristic(Characteristic.SmokeDetected)
         thisCharacteristic.on('get', function(callback) {
                 if (that.device.attributes.smoke == 'clear')
                     callback(null, Characteristic.SmokeDetected.SMOKE_NOT_DETECTED);
@@ -203,7 +203,7 @@ function SmartThingsAccessory(platform, device) {
     if ((device.capabilities["Carbon Monoxide Detector"] !== undefined) && (that.device.attributes.carbonMonoxide)) {
         this.deviceGroup = "detectors";
         
-		thisCharacteristic = this.getService(Service.CarbonMonoxideSensor).getCharacteristic(Characteristic.CarbonMonoxideDetected)
+		thisCharacteristic = this.getaddService(Service.CarbonMonoxideSensor).getCharacteristic(Characteristic.CarbonMonoxideDetected)
         thisCharacteristic.on('get', function(callback) {
                 if (that.device.attributes.carbonMonoxide == 'clear')
                     callback(null, Characteristic.CarbonMonoxideDetected.CO_LEVELS_NORMAL);
@@ -266,7 +266,7 @@ function SmartThingsAccessory(platform, device) {
         thisCharacteristic.on('get', function(callback) { callback(null, that.device.attributes.battery); });
 		that.platform.addAttributeUsage("battery", this.deviceid, thisCharacteristic);
 
-        thisCharacteristic = this.getService(Service.BatteryService).getCharacteristic(Characteristic.StatusLowBattery)
+        thisCharacteristic = this.getaddService(Service.BatteryService).getCharacteristic(Characteristic.StatusLowBattery)
         thisCharacteristic.on('get', function(callback) {
                 if (that.device.attributes.battery < 0.20)
                     callback(null, Characteristic.StatusLowBattery.BATTERY_LEVEL_LOW);
@@ -274,7 +274,7 @@ function SmartThingsAccessory(platform, device) {
                     callback(null, Characteristic.StatusLowBattery.BATTERY_LEVEL_NORMAL);
             });
 
-        this.getService(Service.BatteryService).setCharacteristic(Characteristic.ChargingState, Characteristic.ChargingState.NOT_CHARGING);
+        this.getaddService(Service.BatteryService).setCharacteristic(Characteristic.ChargingState, Characteristic.ChargingState.NOT_CHARGING);
 		that.platform.addAttributeUsage("battery", this.deviceid, thisCharacteristic);
     }
 
