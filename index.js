@@ -23,7 +23,7 @@ function SmartThingsPlatform(log, config) {
 	
     //This is how often it does a full refresh
     this.polling_seconds = config["polling_seconds"];
-	if (!this.polling_seconds) this.polling_seconds=3600;
+	if (!this.polling_seconds) this.polling_seconds=60;
     
     //This is how often it polls for subscription data.
 	this.update_seconds = config["update_seconds"];

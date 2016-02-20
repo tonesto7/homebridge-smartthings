@@ -51,12 +51,12 @@ If you installed the previous update that doesn't allow selecting devices, you n
         "app_url": "https://graph.api.smartthings.com:443/api/smartapps/installations/",
         "app_id": "THIS-SHOULD-BE-YOUR-APPID",
         "access_token": "THIS-SHOULD-BE-YOUR-TOKEN",
-        "polling_seconds": 3600,
+        "polling_seconds": 60,
         "update_seconds": 1
 	} 
 
 To get this information, open SmartThings on your phone, goto "My Home">"SmartApps">"JSON Complete API" and tap on Config
-polling_seconds is optional and defaults to 3600.
+polling_seconds is optional and defaults to 60.
 update_seconds is optional and defaults to 1. At this speed, updates feel instant, but it can be reduced to 0.5 or increased up to 60.
 
 ##Reporting Devices for Development
@@ -74,6 +74,9 @@ I should have started this a while back, but didn't think to. I'll start keeping
 
 * GitHub Current
  * Nothing Additional
+
+* 0.4.3
+ * [Plugin] Adjusted default polling time from 1 hour to 1 minute to correct issue with devices getting lost. I'm still debugging to determine why it isn't working properly set to 1 hour.
  
 * 0.4.1
  * [SmartApp] Fixed accidental changeover to incorrectly using atomicstate.
