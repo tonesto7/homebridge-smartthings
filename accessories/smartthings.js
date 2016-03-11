@@ -72,7 +72,7 @@ function SmartThingsAccessory(platform, device) {
             //This is a Ceiling Fan
             this.deviceGroup = "fans"
             
-            thisCharacteristic = this.getaddService(Service.Fan).getCharacteristic(Characteristic.On)
+            thisCharacteristic = this.getaddService(Service.Switch).getCharacteristic(Characteristic.On)
             thisCharacteristic.on('get', function(callback) { callback(null, that.device.attributes.switch == "on"); })
             thisCharacteristic.on('set', function(value, callback) {
                     if (value)
