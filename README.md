@@ -1,7 +1,7 @@
 # homebridge-smartthings
 
-Current npm version - 0.4.1
-Current Smartapp version - 0.4.1
+Current npm version - 0.4.4
+Current Smartapp version - 0.4.3
 
 If you are upgrading from a prior version, make sure you are using the latest Smartapp.
 If you put polling_seconds in your config.json file, remove it or increase it to a much larger setting.
@@ -51,7 +51,7 @@ If you installed the previous update that doesn't allow selecting devices, you n
         "app_url": "https://graph.api.smartthings.com:443/api/smartapps/installations/",
         "app_id": "THIS-SHOULD-BE-YOUR-APPID",
         "access_token": "THIS-SHOULD-BE-YOUR-TOKEN",
-        "polling_seconds": 60,
+        "polling_seconds": 600,
         "update_seconds": 1
 	} 
 
@@ -69,12 +69,19 @@ update_seconds is optional and defaults to 1. At this speed, updates feel instan
  * If it says "Device Added" then the device should appear in HomeKit. If specific function is missing, post the Device Added line and identify what you are missing from it.
 * If a large number of similar devices are Skipped or missing functionality, it may just be a Capability that is missing. If so, it will be listed in the "Unknown Capabilities" line item.
 
+##Errors while running
+
+* There have been alot of reports of errors causing issues with homebridge. Alot has been done to try and resolve this. Please post an issue for only this issue if you are incountering it.
+* If you receive an "error at req", this is normally caused by network issues and the plugin should always auto-recover. Please verify you have internet access on the device before posting about these. If you get one or two ENOTFOUND errors in the middle of the night, it is probably your modem resetting and is nothing to worry about. 
+ 
 ## What's New
-I should have started this a while back, but didn't think to. I'll start keeping this updated.
 
 * GitHub Current
  * Nothing Additional
 
+* 0.4.4
+ * [Plugin] Added code to ensure the callbacks are always called and that invalid results returns errors instead of crashing the process. Previously, the plugin would attempt to process an invalid result which would cause homebridge to have invalid attribute data. 
+ 
 * 0.4.3
  * [Plugin] Adjusted default polling time from 1 hour to 1 minute to correct issue with devices getting lost. I'm still debugging to determine why it isn't working properly set to 1 hour.
  
