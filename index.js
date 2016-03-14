@@ -73,10 +73,13 @@ SmartThingsPlatform.prototype = {
 			}
 			
 			populateDevices(myList.deviceList);
+            } else if ((!myList)||(!myList.error)) {
+                 that.log ("Invalid Response from API call");
             } else if (myList.error) {
-                that.log ("Error received type " + myList.type+' - '+myList.message)
+                that.log ("Error received type " + myList.type+' - '+myList.message);
             } else { 
-                that.log ("Invalid Response from API call")}
+                that.log ("Invalid Response from API call");
+            }
 			if (callback)
 				callback(foundAccessories)
             that.firstpoll=false;
