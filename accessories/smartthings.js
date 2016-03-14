@@ -80,6 +80,11 @@ function SmartThingsAccessory(platform, device) {
                     else
                         that.platform.api.runCommand(callback, that.deviceid, "off"); });
 		        that.platform.addAttributeUsage("switch", this.deviceid, thisCharacteristic);
+
+	    thisCharacteristic = this.getaddService(Service.Fan).getCharacteristic(Characteristic.RotationSpeed)
+            thisCharacteristic.on('get', function(callback) { callback(null, that.device.attributes.level); });
+            thisCharacteristic.on('set', function(value, callback) { that.platform.api.runCommand(callback, that.deviceid, "setLevel", { value1: value }); });
+			that.platform.addAttributeUsage("level", this.deviceid, thisCharacteristic);
         } else {
             this.deviceGroup = "lights";
             thisCharacteristic = this.getaddService(Service.Lightbulb).getCharacteristic(Characteristic.On)
