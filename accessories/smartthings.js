@@ -83,7 +83,7 @@ function SmartThingsAccessory(platform, device) {
 
 	    thisCharacteristic = this.getaddService(Service.Fan).getCharacteristic(Characteristic.RotationSpeed)
             thisCharacteristic.on('get', function(callback) { callback(null, that.device.attributes.level); });
-            thisCharacteristic.on('set', function(value, callback) { that.platform.api.runCommand(callback, that.deviceid, "setLevel", { if (value1 == 0) {value1: null} else {value1: value }}); });
+            thisCharacteristic.on('set', function(value, callback) { that.platform.api.runCommand(callback, that.deviceid, "setLevel", { if (value1: value == 0) {} else {value1: value }}); });
 			that.platform.addAttributeUsage("level", this.deviceid, thisCharacteristic);
         } else {
             this.deviceGroup = "lights";
