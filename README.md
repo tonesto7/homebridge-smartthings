@@ -79,6 +79,10 @@ update_seconds is optional and defaults to 1. At this speed, updates feel instan
 * GitHub Current
  * Nothing Additional
 
+* 0.4.5
+ * [Plugin] Added rounding to ensure all numbers conform to HomeKit's attributes.
+ * [Plugin] Increased Homebridge version in npm settings to ensure newer fixes and newer hap-nodejs which, again, has many fixes.
+ 
 * 0.4.4
  * [Plugin] Added code to ensure the callbacks are always called and that invalid results returns errors instead of crashing the process. Previously, the plugin would attempt to process an invalid result which would cause homebridge to have invalid attribute data. 
  
