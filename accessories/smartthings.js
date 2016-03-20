@@ -59,12 +59,12 @@ function SmartThingsAccessory(platform, device) {
             this.deviceGroup = "shades"
 
             thisCharacteristic = this.getaddService(Service.WindowCovering).getCharacteristic(Characteristic.TargetPosition)
-            thisCharacteristic.on('get', function(callback) { callback(null, that.device.attributes.level); });
+            thisCharacteristic.on('get', function(callback) { callback(null, parseInt(that.device.attributes.level)); });
             thisCharacteristic.on('set', function(value, callback) { that.platform.api.runCommand(callback, that.deviceid, "setLevel", { value1: value }); });
 			that.platform.addAttributeUsage("level", this.deviceid, thisCharacteristic);
 
             thisCharacteristic = this.getaddService(Service.WindowCovering).getCharacteristic(Characteristic.CurrentPosition)
-            thisCharacteristic.on('get', function(callback) { callback(null, that.device.attributes.level); });
+            thisCharacteristic.on('get', function(callback) { callback(null, parseInt(that.device.attributes.level)); });
 			that.platform.addAttributeUsage("level", this.deviceid, thisCharacteristic);
 			
         } else if (device.commands.lowSpeed) {
@@ -81,7 +81,7 @@ function SmartThingsAccessory(platform, device) {
 		        that.platform.addAttributeUsage("switch", this.deviceid, thisCharacteristic);
 
 	        thisCharacteristic = this.getaddService(Service.Fan).getCharacteristic(Characteristic.RotationSpeed)
-            thisCharacteristic.on('get', function(callback) { callback(null, that.device.attributes.level); });
+            thisCharacteristic.on('get', function(callback) { callback(null, parseInt(that.device.attributes.level)); });
             thisCharacteristic.on('set', function(value, callback) { 
             	    if (value > 0)
             	    	that.platform.api.runCommand(callback, that.deviceid, "setLevel", {value1: value }); });
@@ -99,7 +99,7 @@ function SmartThingsAccessory(platform, device) {
 			that.platform.addAttributeUsage("switch", this.deviceid, thisCharacteristic);
 
             thisCharacteristic = this.getaddService(Service.Lightbulb).getCharacteristic(Characteristic.Brightness)
-            thisCharacteristic.on('get', function(callback) { callback(null, that.device.attributes.level); });
+            thisCharacteristic.on('get', function(callback) { callback(null, parseInt(that.device.attributes.level)); });
             thisCharacteristic.on('set', function(value, callback) { that.platform.api.runCommand(callback, that.deviceid, "setLevel", { value1: value }); });
 			that.platform.addAttributeUsage("level", this.deviceid, thisCharacteristic);
 			
@@ -110,7 +110,7 @@ function SmartThingsAccessory(platform, device) {
 				that.platform.addAttributeUsage("hue", this.deviceid, thisCharacteristic);
 
                 thisCharacteristic = this.getaddService(Service.Lightbulb).getCharacteristic(Characteristic.Saturation)
-                thisCharacteristic.on('get', function(callback) { callback(null, that.device.attributes.saturation); });
+                thisCharacteristic.on('get', function(callback) { callback(null, parseInt(that.device.attributes.saturation)); });
                 thisCharacteristic.on('set', function(value, callback) { that.platform.api.runCommand(callback, that.deviceid, "setSaturation", { value1: value }); });
 				that.platform.addAttributeUsage("saturation", this.deviceid, thisCharacteristic);
             }
@@ -398,7 +398,7 @@ function SmartThingsAccessory(platform, device) {
         if (device.capabilities["Relative Humidity Measurement"] !== undefined) {
             thisCharacteristic = this.getaddService(Service.Thermostat).getCharacteristic(Characteristic.CurrentRelativeHumidity)
             thisCharacteristic.on('get', function(callback) {
-                    callback(null, that.device.attributes.humidity);
+                    callback(null, parseInt(that.device.attributes.humidity));
                 });
 			that.platform.addAttributeUsage("humidity", this.deviceid, thisCharacteristic);
         }
@@ -406,9 +406,9 @@ function SmartThingsAccessory(platform, device) {
         thisCharacteristic = this.getaddService(Service.Thermostat).getCharacteristic(Characteristic.CurrentTemperature)
         thisCharacteristic.on('get', function(callback) {
                 if (that.platform.temperature_unit == 'C')
-                    callback(null, that.device.attributes.temperature);
+                    callback(null, Math.round(that.device.attributes.temperature*10)/10);
                 else
-                    callback(null, (that.device.attributes.temperature - 32) / 1.8);
+                    callback(null, Math.round(((that.device.attributes.temperature - 32) / 1.8)*10)/10);
             });
 		that.platform.addAttributeUsage("temperature", this.deviceid, thisCharacteristic);
 

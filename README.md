@@ -79,6 +79,9 @@ update_seconds is optional and defaults to 1. At this speed, updates feel instan
 * GitHub Current
  * Nothing Additional
 
+* 0.4.6
+ * [Plugin] Added explicit conversions to numeric for all numbers. When a streamed update would occurs, the value comes back as a string sometimes. This normally isn't an issue because math is done on alot of numbers but people with Celsius temperatures and brightness changes have been notably affected.
+ 
 * 0.4.5
  * [Plugin] Added rounding to ensure all numbers conform to HomeKit's attributes.
  * [Plugin] Increased Homebridge version in npm settings to ensure newer fixes and newer hap-nodejs which, again, has many fixes.
