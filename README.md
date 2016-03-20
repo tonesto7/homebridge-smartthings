@@ -1,7 +1,7 @@
 # homebridge-smartthings
 
 [![npm version](https://badge.fury.io/js/homebridge-smartthings.svg)](https://badge.fury.io/js/homebridge-smartthings)
-Current Smartapp version - 0.4.3
+Current Smartapp version - 0.4.1
 
 If you are upgrading from a prior version, make sure you are using the latest Smartapp.
 If you put polling_seconds in your config.json file, remove it or increase it to a much larger setting.
