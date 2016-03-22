@@ -431,8 +431,9 @@ function SmartThingsAccessory(platform, device) {
                         temp = Math.abs(high - cur) < Math.abs(cur - low) ? high : low;
                         break;
                 }
-                if (!temp) callback('Unknown');
-                if (that.platform.temperature_unit == 'C')
+                if (!temp) 
+                    callback('Unknown');
+                else if (that.platform.temperature_unit == 'C')
                     callback(null, Math.round(temp*10)/10);
                 else
                     callback(null, Math.round(((temp - 32) / 1.8)*10)/10);
