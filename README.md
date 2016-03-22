@@ -79,6 +79,9 @@ update_seconds is optional and defaults to 1. At this speed, updates feel instan
 * GitHub Current
  * Nothing Additional
 
+* 0.4.7
+ * [Plugin] resolved issue where the callback could be called twice. 
+ 
 * 0.4.6
  * [Plugin] Added explicit conversions to numeric for all numbers. When a streamed update would occurs, the value comes back as a string sometimes. This normally isn't an issue because math is done on alot of numbers but people with Celsius temperatures and brightness changes have been notably affected.
  
