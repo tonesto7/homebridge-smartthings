@@ -538,6 +538,7 @@ function loadData(data, myObject) {
     var that = this;
     if (myObject !== undefined) that = myObject;
     if (data !== undefined) {
+        this.device = data;
         for (var i = 0; i < that.services.length; i++) {
             for (var j = 0; j < that.services[i].characteristics.length; j++) {
                 that.services[i].characteristics[j].getValue();
