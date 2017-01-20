@@ -193,6 +193,11 @@ function SmartThingsAccessory(platform, device) {
                         break;
                 } });
         thisCharacteristic.on('set', function(value, callback) {
+		if (value === false) {
+                    value = Characteristic.LockTargetState.UNSECURED;
+                } else if (value === true) {
+                    value = Characteristic.LockTargetState.SECURED;
+                }  
                 switch (value) {
                     case Characteristic.LockTargetState.SECURED:
                         that.platform.api.runCommand(callback, that.deviceid, "lock");
