@@ -27,14 +27,14 @@ def copyConfig() {
     }
     dynamicPage(name: "copyConfig", title: "Configure Devices", install:true, uninstall:true) {
         section("Select devices to include in the /devices API call") {
-            paragraph "Version 0.4.1"
+            paragraph "Version 0.4.2"
             input "deviceList", "capability.refresh", title: "Most Devices", multiple: true, required: false
             input "sensorList", "capability.sensor", title: "Sensor Devices", multiple: true, required: false
             input "switchList", "capability.switch", title: "All Switches", multiple: true, required: false
             paragraph "Devices Selected: ${deviceList ? deviceList?.size() : 0}\nSensors Selected: ${sensorList ? sensorList?.size() : 0}\nSwitches Selected: ${switchList ? switchList?.size() : 0}"
         }
         section("Configure Pubnub") {
-            paragraph "Version 0.4.1"
+            paragraph "Version 0.4.2"
             input(name: "subEnabled", type: "enum", title: "Use Messenger Service for Updates", options: ["None","PubNub"])
             input "pubnubSubscribeKey", "text", title: "PubNub Subscription Key", multiple: false, required: false
             input "pubnubPublishKey", "text", title: "PubNub Publish Key", multiple: false, required: false
