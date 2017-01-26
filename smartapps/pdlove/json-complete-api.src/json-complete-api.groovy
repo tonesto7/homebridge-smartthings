@@ -25,7 +25,7 @@ def copyConfig() {
     if (!state.accessToken) {
         createAccessToken()
     }
-    dynamicPage(name: "copyConfig", title: "Config", install:true, uninstall:true) {
+    dynamicPage(name: "copyConfig", title: "Configure Devices", install:true, uninstall:true) {
         section("Select devices to include in the /devices API call") {
             paragraph "Version 0.4.1"
             input "deviceList", "capability.refresh", title: "Most Devices", multiple: true, required: false
@@ -33,11 +33,18 @@ def copyConfig() {
             input "switchList", "capability.switch", title: "All Switches", multiple: true, required: false
             paragraph "Devices Selected: ${deviceList ? deviceList?.size() : 0}\nSensors Selected: ${sensorList ? sensorList?.size() : 0}\nSwitches Selected: ${switchList ? switchList?.size() : 0}"
         }
+        section("Configure Pubnub") {
+            paragraph "Version 0.4.1"
+            input(name: "subEnabled", type: "enum", title: "Use Messenger Service for Updates", options: ["None","PubNub"])
+            input "pubnubSubscribeKey", "text", title: "PubNub Subscription Key", multiple: false, required: false
+            input "pubnubPublishKey", "text", title: "PubNub Publish Key", multiple: false, required: false
+            input "subChannel", "text", title: "Channel (Can be anything)", multiple: false, required: false
+        }
         section() {
             paragraph "View this SmartApp's configuration to use it in other places."
             href url:"${apiServerUrl("/api/smartapps/installations/${app.id}/config?access_token=${state.accessToken}")}", style:"embedded", required:false, title:"Config", description:"Tap, select, copy, then click \"Done\""
         }
-
+ 
         section() {
         	paragraph "View the JSON generated from the installed devices."
             href url:"${apiServerUrl("/api/smartapps/installations/${app.id}/devices?access_token=${state.accessToken}")}", style:"embedded", required:false, title:"Device Results", description:"View accessories JSON"
@@ -282,6 +289,18 @@ def registerChangeHandler(myList) {
 }
 
 def changeHandler(evt) {
+	//Send to Pubnub if we need to.
+    def deviceData = [device: evt.deviceId, attribute: evt.name, value: evt.value, date: evt.date]
+	def changeJson = new groovy.json.JsonOutput().toJson(deviceData)
+    
+    if (subEnabled=="PubNub") {
+        def changeData = URLEncoder.encode(changeJson)
+        def uri = "http://pubsub.pubnub.com/publish/${pubnubPublishKey}/${pubnubSubscribeKey}/0/${subChannel}/0/${changeData}"
+		log.debug "${uri}"
+    	httpGet(uri)
+    }
+    
+    
 	//Only add to the state's devchanges if the endpoint has renewed in the last 10 minutes.
     if (state.subscriptionRenewed>(now()-(1000*60*10))) {
   		if (evt.isStateChange()) {
@@ -331,5 +350,6 @@ mappings {
         path("/subscribe")                      { action: [GET: "startSubscription"] }
         path("/getUpdates")                     { action: [GET: "getChangeEvents"] }
         path("/unsubscribe")                      { action: [GET: "endSubscription"] }
+        
     }
 }
