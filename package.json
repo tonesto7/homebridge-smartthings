@@ -17,5 +17,6 @@
 		"homebridge": ">=0.3.1"
 	},
 	"dependencies": {
+		"pubnub": ">=4.4.0"
 	}
 }
