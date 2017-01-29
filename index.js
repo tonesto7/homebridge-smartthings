@@ -1,5 +1,7 @@
 var PubNub = require('pubnub')
 var smartthings = require('./lib/smartthingsapi');
+var http = require('http')
+var os = require('os');
 
 var Service, Characteristic, Accessory, uuid, EnergyCharacteristics;
 
@@ -24,17 +26,22 @@ function SmartThingsPlatform(log, config) {
 
 	//This is how often it does a full refresh
 	this.polling_seconds = config["polling_seconds"];
-	if (!this.polling_seconds) this.polling_seconds = 60;
+	if (!this.polling_seconds) this.polling_seconds = 3600; //Get a full refresh every hour.
 
 	//This is how often it polls for subscription data.
-	this.update_seconds = config["update_seconds"];
-	if (!this.update_seconds) this.update_seconds = 10;
-
 	this.update_method = config["update_method"];
 	if (!this.update_method) this.update_method='api';
 
-	this.pubnub_subscription_key = config["pubnub_subscription_key"];
-	this.pubnub_channel = config["pubnub_channel"];
+	this.update_seconds = config["update_seconds"];
+	if (!this.update_seconds) this.update_seconds = 30; //30 seconds is the new default
+	if (this.update_method==='api' && this.update_seconds<30) 
+		that.log("The setting for update_seconds is lower than the SmartThings recommended value. Please switch to direct or PubNub using a free subscription for real-time updates.");
+
+	this.direct_port = config["direct_port"];
+	if (!this.direct_port) this.direct_port = 8000;
+	
+	this.direct_ip = config["direct_ip"];
+	if (!this.direct_ip) this.direct_ip = smartthing_getIP();
 
 	this.api = smartthings;
 	this.log = log;
@@ -113,27 +120,40 @@ SmartThingsPlatform.prototype = {
 			that.log("Unknown Capabilities: " + JSON.stringify(that.unknownCapabilities));
 			callback(foundAccessories);
 			setInterval(that.reloadData.bind(that), that.polling_seconds * 1000);
-			if (that.update_method==='api')
+			//Initialize Update Mechanism for realtime-ish updates.
+			if (that.update_method==='api') //Legacy API method.
 				setInterval(that.doIncrementalUpdate.bind(that), that.update_seconds * 1000);
-			if (that.update_method==='pubnub') {
-				pubnub = new PubNub({ subscribeKey : that.pubnub_subscription_key });
-				pubnub.addListener({ message: function(message) { that.processFieldUpdate(message.message, that); } });
-        		pubnub.subscribe({ channels: [ that.pubnub_channel ] });
+
+			else if (that.update_method==='pubnub') { //Uses user's PubNub account
+				that.api.getSubscriptionService(function(data) {
+					pubnub = new PubNub({ subscribeKey : data.pubnub_subscribekey });
+					pubnub.addListener({ 
+							status: function(statusEvent) { if (statusEvent.category==='PNReconnectedCategory') that.reloadData(null); },
+							message: function(message) { that.processFieldUpdate(message.message, that); } });
+        			pubnub.subscribe({ channels: [ that.pubnub_channel ] });	
+				});
+			}
+
+			else if (that.update_method=='direct') { //The Hub sends updates to this module using http
+				smartthings_SetupHTTPServer(that);
+				smartthings.startDirect(null,that.direct_ip, that.direct_port);
 			}
 		});
 	},
-	addAttributeUsage(attribute, deviceid, mycharacteristic) {
+	addAttributeUsage: function(attribute, deviceid, mycharacteristic) {
 		if (!this.attributeLookup[attribute])
 			this.attributeLookup[attribute] = {};
 		if (!this.attributeLookup[attribute][deviceid])
 			this.attributeLookup[attribute][deviceid] = [];
 		this.attributeLookup[attribute][deviceid].push(mycharacteristic);
 	},
-	doIncrementalUpdate() {
+
+	doIncrementalUpdate: function() {
 		var that=this;
 		smartthings.getUpdates(function(data) { that.processIncrementalUpdate(data, that)});
 	},
-	processIncrementalUpdate(data, that) {
+
+	processIncrementalUpdate: function(data, that) {
 		if (data && data.attributes && data.attributes instanceof Array) {
 			for (var i = 0; i < data.attributes.length; i++) {
 				that.processFieldUpdate(data.attributes[i], that);
@@ -141,7 +161,9 @@ SmartThingsPlatform.prototype = {
 			}
 		}
 	},
-	processFieldUpdate(attributeSet, that) {
+
+	processFieldUpdate: function(attributeSet, that) {
+		//that.log("Processing Update");
 		if (!((that.attributeLookup[attributeSet.attribute]) && (that.attributeLookup[attributeSet.attribute][attributeSet.device]))) return;
 		var myUsage = that.attributeLookup[attributeSet.attribute][attributeSet.device];
 		if (myUsage instanceof Array) {
@@ -155,3 +177,48 @@ SmartThingsPlatform.prototype = {
 		}
 	}
 };
+
+function smartthing_getIP() {
+	var myIP = '';
+	var ifaces = os.networkInterfaces();
+	Object.keys(ifaces).forEach(function (ifname) {
+  		var alias = 0;
+		ifaces[ifname].forEach(function (iface) {
+    		if ('IPv4' !== iface.family || iface.internal !== false) {
+      			// skip over internal (i.e. 127.0.0.1) and non-ipv4 addresses
+      			return;
+    		}
+    	myIP = iface.address;
+  		});
+	});
+	return myIP;
+}
+function smartthings_SetupHTTPServer(mySmartThings) {
+	//Get the IP address that we will send to the SmartApp. This can be overridden in the config file.
+	
+	//Start the HTTP Server
+	const server = http.createServer(function(request,response) { 
+				smartthings_HandleHTTPResponse(request, response, mySmartThings)});
+
+	server.listen(mySmartThings.direct_port, (err) => {  
+  		if (err) {
+    		mySmartThings.log('something bad happened', err);
+			return '';
+  		}
+		mySmartThings.log(`Direct Connect Is Listening On ${mySmartThings.direct_ip}:${mySmartThings.direct_port}`);
+	})
+	return 'good';
+}
+
+function smartthings_HandleHTTPResponse(request, response, mySmartThings)  {
+	if (request.url=='/initial') 
+		mySmartThings.log("SmartThings Hub Communication Established");
+if (request.url=='/update') {
+		var newChange = { device: request.headers["change_device"],
+						  attribute: request.headers["change_attribute"],
+						  value: request.headers["change_value"],
+						  date: request.headers["chande_date"]};
+		mySmartThings.processFieldUpdate(newChange, mySmartThings);
+		}
+	response.end('OK');
+}

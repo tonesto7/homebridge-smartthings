@@ -212,6 +212,19 @@ function SmartThingsAccessory(platform, device) {
 		
     }
 
+    if (device.capabilities["Switch"] !== undefined && this.deviceGroup == "unknown") {
+        this.deviceGroup = "switch";
+        thisCharacteristic = this.getaddService(Service.Switch).getCharacteristic(Characteristic.On)
+        thisCharacteristic.on('get', function(callback) { callback(null, that.device.attributes.switch == "on"); })
+        thisCharacteristic.on('set', function(value, callback) {
+                if (value)
+                    that.platform.api.runCommand(callback, that.deviceid, "on");
+                else
+                    that.platform.api.runCommand(callback, that.deviceid, "off");
+            });
+		that.platform.addAttributeUsage("switch", this.deviceid, thisCharacteristic);
+    }
+
     if ((device.capabilities["Smoke Detector"] !== undefined) && (that.device.attributes.smoke)) {
         this.deviceGroup = "detectors";
 
@@ -301,19 +314,6 @@ function SmartThingsAccessory(platform, device) {
 
         this.getaddService(Service.BatteryService).setCharacteristic(Characteristic.ChargingState, Characteristic.ChargingState.NOT_CHARGING);
 		that.platform.addAttributeUsage("battery", this.deviceid, thisCharacteristic);
-    }
-
-    if (device.capabilities["Switch"] !== undefined && this.deviceGroup == "unknown") {
-        this.deviceGroup = "switch";
-        thisCharacteristic = this.getaddService(Service.Switch).getCharacteristic(Characteristic.On)
-        thisCharacteristic.on('get', function(callback) { callback(null, that.device.attributes.switch == "on"); })
-        thisCharacteristic.on('set', function(value, callback) {
-                if (value)
-                    that.platform.api.runCommand(callback, that.deviceid, "on");
-                else
-                    that.platform.api.runCommand(callback, that.deviceid, "off");
-            });
-		that.platform.addAttributeUsage("switch", this.deviceid, thisCharacteristic);
     }
 
     if (device.capabilities["Energy Meter"] !== undefined) {

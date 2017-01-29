@@ -1,10 +1,45 @@
 # homebridge-smartthings
 
 [![npm version](https://badge.fury.io/js/homebridge-smartthings.svg)](https://badge.fury.io/js/homebridge-smartthings)
-Current Smartapp version - 0.4.1
+Current Smartapp version - 0.5.0
 
 If you are upgrading from a prior version, make sure you are using the latest Smartapp.
-If you put polling_seconds in your config.json file, remove it or increase it to a much larger setting.
+
+## Device Updates from SmartThings
+
+SmartThings has requested that this app not poll the server so much to see if there is data. We don't technically poll it enough to violate the posted rate limits, but I've made changes to improve performance with their advice.
+There is a new configuration item to control how you receive updates called update_method.
+If update_method is not set, "direct" is used.
+Full device dumps are always fetched regularly in case something has been missed. This is controlled via the "polling_seconds" configuration option and defaults to once an hour.
+
+### Updates via API
+This method fires every x number of seconds when configured.
+This option has proven to be reliable over the past year but is being deprecated due to the number of API calls required for realtime updates.
+You can control the polling frequency with the "update_seconds" value. The default is changing to 30 seconds to comply with requests from SmartThings developers.
+If you set it lower you will get a warning from the app but it will allow you at your own risk of the smartapp being disabled by them.
+
+### Direct Updates
+This method is nearly instant.
+This option allows the hub to send updates directly to your homebridge-smartthings installation.
+The hub must be able to send an http packet to your device so make sure to allow incoming traffic on the applicable port.
+The port used for this can be configured by the "direct_port" setting and defaults to 8000.
+The program will attempt to determine your IP address automatically, but that can be overridden by "direct_ip" which is useful if you have multiple addresses.
+As a note, the hub isn't actual doing any of the processing so if you lose Internet, updates will stop. I'm told it "doesn't currently" support it, so there is hope.
+
+When properly setup, you should see something like this in your Homebridge startup immediately after the PIN:
+```
+[1/29/2017, 8:28:45 AM] Homebridge is running on port 51826.
+[1/29/2017, 8:28:45 AM] [SmartThings] Direct Connect Is Listening On 192.168.0.49:8000
+[1/29/2017, 8:28:45 AM] [SmartThings] SmartThings Hub Communication Established
+```
+
+### PubNub Updates
+This method is nearly instant.
+If Direct Updates won't work for you, you can use PubNub as a go-between for the cloud.
+The free account with them should work for most installations. If you look at their site, this use counts as 1 device and the messages are counted going and coming so it ends up being 500,000 updates a month on the free account.
+If anyone actually has more update than that, I can look at consolidating updates by a timeframe and sending them in batches to reduce the message count used for updates.
+This method requires you to give the smartapp your publish key and subscription key for PubNub and the smartapp needs the subscription key. It also requires a channel name.
+The subscription key and channel are retrieved from the Smartapp to make sure they are always the same.
 
 ## Installation
 
@@ -35,6 +70,7 @@ If you installed the previous update that doesn't allow selecting devices, you n
   * Some devices, mainly Virtual Switches, only have the Switch Capability and are in the "All Switches".
  * If you select the same device in multiple categories it will only be shown once in HomeKit, so you can safely check them all in all groups.
  * If a device isn't listed, let me know by submitting an issue on GitHub.
+* If using PubNub for updates, scroll down and enter the Subscription Key, Publish Key and a channel name. The channel can be named anything, but it must match between the SmartApp installation and the config.json for homebridge.
 * Tap Done and then Done.
 
 ### Homebridge Installation
@@ -43,21 +79,57 @@ If you installed the previous update that doesn't allow selecting devices, you n
 2. Install this plugin using: npm install -g homebridge-smartthings
 3. Update your configuration file. See sample config.json snippet below.
 
-### Config.json example
+### Config.json Settings
 
+Example of all settings. Not all ssettings are required. Read the breakdown below.
+```
 	{
 	   "platform": "homebridge-smartthings.SmartThings",
     	"name": "SmartThings",
         "app_url": "https://graph.api.smartthings.com:443/api/smartapps/installations/",
         "app_id": "THIS-SHOULD-BE-YOUR-APPID",
         "access_token": "THIS-SHOULD-BE-YOUR-TOKEN",
-        "polling_seconds": 600,
-        "update_seconds": 1
+        "polling_seconds": 3600,
+        "update_method": "direct",
+        "direct_ip": "192.168.0.45",
+        "direct_port": 8000,
+        "api_seconds": 30
 	}
+```
+* "platform" and "name"
+**_Required_**
+This information is used by homebridge to identify the plugin and should be the settings above.
 
-To get this information, open SmartThings on your phone, goto "My Home">"SmartApps">"JSON Complete API" and tap on Config
-polling_seconds is optional and defaults to 60.
-update_seconds is optional and defaults to 1. At this speed, updates feel instant, but it can be reduced to 0.5 or increased up to 60.
+* "app_url", "app_id" and "access_token"
+**_Required_**
+To get this information, open SmartThings on your phone, goto "Automation">"SmartApps">"JSON Complete API" and tap on Config
+The app_url in the example may be different for you.
+
+* "polling_seconds"
+**_Optional_** Defaults to 3600
+Identifies how often to get full updates. At this interval, homebridge-smartthings will request a complete device dump from the API just in case any subscription events have been missed.
+This defaults to once every hour. I have had it set to daily in my installation with no noticable issues.
+
+* "update_method"
+**_Optional_** Defaults to direct
+See *Device Updates from SmartThings* for more information.
+Options are: "direct", "pubnub", "api" and a recommended in that order.
+
+
+* "direct_ip"
+**_Optional_** Defaults to first available IP on your computer
+This setting only applies if update_method is direct.
+Most installations won't need this, but if for any reason it can't identify your ip address correctly, use this setting to force the IP presented to SmartThings for the hub to send to.
+
+* "direct_port"
+**_Optional_** Defaults to 8000
+This setting only applies if update_method is direct.
+This is the port that homebridge-smartthings will listen on for traffic from your hub. Make sure your firewall allows incoming traffic on this port from your hub's IP address.
+
+* "api_seconds"
+**_Optional_** Defaults to 30
+This setting only applies if update_method is api.
+This is how often the api will poll for updates. This update method is not recommended.
 
 ##Reporting Devices for Development
 
@@ -76,8 +148,10 @@ update_seconds is optional and defaults to 1. At this speed, updates feel instan
  
 ## What's New
 
-* GitHub Current
- * Nothing Additional
+* 0.5.0
+ * Add support for PubNub and Direct updates. The legacy method using the API has been somewhat crippled in default settings.
+ * [Plugin] Moved switches up in the order so that they switches with temperature sensors on them still add as switches.
+ * [SmartApp] Updated icons to come from my own dropbox rather than "some random guy on the internet". The icon has also been changed to be a fusion of the JSON logo and the Smartthings logo.
 
 * 0.4.7
  * [Plugin] resolved issue where the callback could be called twice. 
