@@ -98,38 +98,38 @@ Example of all settings. Not all ssettings are required. Read the breakdown belo
 ```
 * "platform" and "name"
 **_Required_**
-This information is used by homebridge to identify the plugin and should be the settings above.
+ * This information is used by homebridge to identify the plugin and should be the settings above.
 
 * "app_url", "app_id" and "access_token"
 **_Required_**
-To get this information, open SmartThings on your phone, goto "Automation">"SmartApps">"JSON Complete API" and tap on Config
-The app_url in the example may be different for you.
+ * To get this information, open SmartThings on your phone, goto "Automation">"SmartApps">"JSON Complete API" and tap on Config
+ * The app_url in the example may be different for you.
 
 * "polling_seconds"
 **_Optional_** Defaults to 3600
-Identifies how often to get full updates. At this interval, homebridge-smartthings will request a complete device dump from the API just in case any subscription events have been missed.
-This defaults to once every hour. I have had it set to daily in my installation with no noticable issues.
+ * Identifies how often to get full updates. At this interval, homebridge-smartthings will request a complete device dump from the API just in case any subscription events have been missed.
+ * This defaults to once every hour. I have had it set to daily in my installation with no noticable issues.
 
 * "update_method"
 **_Optional_** Defaults to direct
-See *Device Updates from SmartThings* for more information.
-Options are: "direct", "pubnub", "api" and a recommended in that order.
+ * See *Device Updates from SmartThings* for more information.
+ * Options are: "direct", "pubnub", "api" and a recommended in that order.
 
 
 * "direct_ip"
 **_Optional_** Defaults to first available IP on your computer
-This setting only applies if update_method is direct.
-Most installations won't need this, but if for any reason it can't identify your ip address correctly, use this setting to force the IP presented to SmartThings for the hub to send to.
+ * This setting only applies if update_method is direct.
+ * Most installations won't need this, but if for any reason it can't identify your ip address correctly, use this setting to force the IP presented to SmartThings for the hub to send to.
 
 * "direct_port"
 **_Optional_** Defaults to 8000
-This setting only applies if update_method is direct.
-This is the port that homebridge-smartthings will listen on for traffic from your hub. Make sure your firewall allows incoming traffic on this port from your hub's IP address.
+ * This setting only applies if update_method is direct.
+ * This is the port that homebridge-smartthings will listen on for traffic from your hub. Make sure your firewall allows incoming traffic on this port from your hub's IP address.
 
 * "api_seconds"
 **_Optional_** Defaults to 30
-This setting only applies if update_method is api.
-This is how often the api will poll for updates. This update method is not recommended.
+ * This setting only applies if update_method is api.
+ * This is how often the api will poll for updates. This update method is not recommended.
 
 ##Reporting Devices for Development
 
