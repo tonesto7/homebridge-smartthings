@@ -148,6 +148,11 @@ Example of all settings. Not all ssettings are required. Read the breakdown belo
  
 ## What's New
 
+* 0.5.1
+ * [Plugin] Fixed default value to be correct for update_method.
+ * [Plugin] Added type detection for Water Sensor.
+
+
 * 0.5.0
  * Add support for PubNub and Direct updates. The legacy method using the API has been somewhat crippled in default settings.
  * [Plugin] Moved switches up in the order so that they switches with temperature sensors on them still add as switches.

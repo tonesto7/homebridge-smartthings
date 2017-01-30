@@ -30,7 +30,7 @@ function SmartThingsPlatform(log, config) {
 
 	//This is how often it polls for subscription data.
 	this.update_method = config["update_method"];
-	if (!this.update_method) this.update_method='api';
+	if (!this.update_method) this.update_method='direct';
 
 	this.update_seconds = config["update_seconds"];
 	if (!this.update_seconds) this.update_seconds = 30; //30 seconds is the new default

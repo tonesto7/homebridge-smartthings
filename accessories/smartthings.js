@@ -212,6 +212,15 @@ function SmartThingsAccessory(platform, device) {
 		
     }
 
+//    if (devices.capabilities["Valve"] !== undefined) {
+//        this.deviceGroup = "valve";
+// Thinking of implementing this as a Door service.
+//    }
+
+    if (device.capabilities["Button"] !== undefined) {
+        this.deviceGroup = " button";
+        
+    }
     if (device.capabilities["Switch"] !== undefined && this.deviceGroup == "unknown") {
         this.deviceGroup = "switch";
         thisCharacteristic = this.getaddService(Service.Switch).getCharacteristic(Characteristic.On)
@@ -257,6 +266,17 @@ function SmartThingsAccessory(platform, device) {
 		thisCharacteristic = this.getaddService(Service.MotionSensor).getCharacteristic(Characteristic.MotionDetected)
         thisCharacteristic.on('get', function(callback) { callback(null, (that.device.attributes.motion == "active")); });
  		that.platform.addAttributeUsage("motion", this.deviceid, thisCharacteristic);
+    }
+
+    if (device.capabilities["Water Sensor"] !== undefined) {
+        if (this.deviceGroup == 'unknown') this.deviceGroup = "sensor";
+		
+        thisCharacteristic = this.getaddService(Service.LeakSensor).getCharacteristic(Characteristic.LeakDetected)
+        thisCharacteristic.on('get', function(callback) { 
+                                var reply = Characteristic.LeakDetected.LEAK_DETECTED;
+                                if (that.device.attributes.water == "dry") reply = Characteristic.LeakDetected.LEAK_NOT_DETECTED;
+                    callback(null, reply); });
+ 		that.platform.addAttributeUsage("water", this.deviceid, thisCharacteristic);
     }
 
     if (device.capabilities["Presence Sensor"] !== undefined) {
