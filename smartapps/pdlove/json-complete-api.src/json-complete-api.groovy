@@ -27,7 +27,7 @@ def copyConfig() {
     }
     dynamicPage(name: "copyConfig", title: "Configure Devices", install:true, uninstall:true) {
         section("Select devices to include in the /devices API call") {
-            paragraph "Version 0.5.0"
+            paragraph "Version 0.5.1"
             input "deviceList", "capability.refresh", title: "Most Devices", multiple: true, required: false
             input "sensorList", "capability.sensor", title: "Sensor Devices", multiple: true, required: false
             input "switchList", "capability.switch", title: "All Switches", multiple: true, required: false
@@ -57,14 +57,44 @@ def copyConfig() {
 def renderDevices() {
     def deviceData = []
         deviceList.each { 
-        	deviceData << [name: it.displayName, deviceid: it.id, capabilities: deviceCapabilityList(it), commands: deviceCommandList(it), attributes: deviceAttributeList(it), status: it.status]
-	}    
+        	deviceData << [name: it.displayName,
+    				basename: it.name,
+    				deviceid: it.id, 
+                    status: it.status,
+                    manufacturerName: it.getManufacturerName(),
+                    modelName: it.getModelName(),
+                    lastTime: it.getLastActivity(),
+                    capabilities: deviceCapabilityList(it), 
+                    commands: deviceCommandList(it), 
+                    attributes: deviceAttributeList(it)
+                    ]
+		}    
         sensorList.each  { 
-        	deviceData << [name: it.displayName, deviceid: it.id, capabilities: deviceCapabilityList(it), commands: deviceCommandList(it), attributes: deviceAttributeList(it), status: it.status]
-	}
+        	deviceData << [name: it.displayName,
+    				basename: it.name,
+    				deviceid: it.id, 
+                    status: it.status,
+                    manufacturerName: it.getManufacturerName(),
+                    modelName: it.getModelName(),
+                    lastTime: it.getLastActivity(),
+                    capabilities: deviceCapabilityList(it), 
+                    commands: deviceCommandList(it), 
+                    attributes: deviceAttributeList(it)
+                    ]
+		}
         switchList.each  { 
-        	deviceData << [name: it.displayName, deviceid: it.id, capabilities: deviceCapabilityList(it), commands: deviceCommandList(it), attributes: deviceAttributeList(it), status: it.status]
-	}
+        	deviceData << [name: it.displayName,
+    				basename: it.name,
+    				deviceid: it.id, 
+                    status: it.status,
+                    manufacturerName: it.getManufacturerName(),
+                    modelName: it.getModelName(),
+                    lastTime: it.getLastActivity(),
+                    capabilities: deviceCapabilityList(it), 
+                    commands: deviceCommandList(it), 
+                    attributes: deviceAttributeList(it)
+                    ]
+		}
     return deviceData
 }
 
@@ -126,7 +156,8 @@ def renderLocation() {
     	mode: location.mode,
     	name: location.name,
     	temperature_scale: location.temperatureScale,
-    	zip_code: location.zipCode
+    	zip_code: location.zipCode,
+        hubIP: location.hubs[0].localIP
   	]
 }
 def CommandReply(statusOut, messageOut) {
