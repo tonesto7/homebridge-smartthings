@@ -27,7 +27,7 @@ def copyConfig() {
     }
     dynamicPage(name: "copyConfig", title: "Configure Devices", install:true, uninstall:true) {
         section("Select devices to include in the /devices API call") {
-            paragraph "Version 0.5.1"
+            paragraph "Version 0.5.2"
             input "deviceList", "capability.refresh", title: "Most Devices", multiple: true, required: false
             input "sensorList", "capability.sensor", title: "Sensor Devices", multiple: true, required: false
             input "switchList", "capability.switch", title: "All Switches", multiple: true, required: false
@@ -127,6 +127,7 @@ def initialize() {
     }
     registerAll()
 	state.subscriptionRenewed = 0
+    subscribe(location, null, HubResponseEvent, [filterEvents:false])
 }
 
 def authError() {
@@ -304,8 +305,7 @@ def registerChangeHandler(myList) {
 }
 def changeHandler(evt) {
 	//Send to Pubnub if we need to.
-    
-    if (pubnubPublishKey!="") {
+    if (pubnubPublishKey!=null) {
 	    def deviceData = [device: evt.deviceId, attribute: evt.name, value: evt.value, date: evt.date]
 		def changeJson = new groovy.json.JsonOutput().toJson(deviceData)
 		def changeData = URLEncoder.encode(changeJson)
@@ -374,6 +374,11 @@ def enableDirectUpdates() {
 		)
      sendHubCommand(result)
 }
+
+def HubResponseEvent(evt) {
+	log.debug(evt.description)
+}
+
 
 def getSubscriptionService() {
 	def replyData =
