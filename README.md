@@ -1,7 +1,7 @@
 # homebridge-smartthings
 
 [![npm version](https://badge.fury.io/js/homebridge-smartthings.svg)](https://badge.fury.io/js/homebridge-smartthings)
-Current Smartapp version - 0.5.0
+Current Smartapp version - 0.5.2
 
 If you are upgrading from a prior version, make sure you are using the latest Smartapp.
 
@@ -147,6 +147,9 @@ Example of all settings. Not all ssettings are required. Read the breakdown belo
 * If you receive an "error at req", this is normally caused by network issues and the plugin should always auto-recover. Please verify you have internet access on the device before posting about these. If you get one or two ENOTFOUND errors in the middle of the night, it is probably your modem resetting and is nothing to worry about. 
  
 ## What's New
+
+* 0.5.2
+ * [SmartApp] Various fixes to fix flaws in the implementation of the direct feed and optional pubnub feed.
 
 * 0.5.1
  * [Plugin] Fixed default value to be correct for update_method.
