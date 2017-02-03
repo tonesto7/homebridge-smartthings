@@ -41,6 +41,20 @@ If anyone actually has more update than that, I can look at consolidating update
 This method requires you to give the smartapp your publish key and subscription key for PubNub and the smartapp needs the subscription key. It also requires a channel name.
 The subscription key and channel are retrieved from the Smartapp to make sure they are always the same.
 
+## Upgrade Existing Installation
+
+1. Log into your SmartThings account at https://graph.api.smartthings.com/ Then goto "MySmartApps"
+2. Click "Update From Repo" and select "homebridge-smartthings".
+3. You should see the smartapp listed under "Obsolete". Check the box next to the smart app. Check the box next to Publish. Click Execute Update.
+4. Close homebridge, if running.
+5. Run "npm update homebridge -g" to make sure homebridge is up to date.
+6. Run "npm update homebridge-smartthing -g" to update the smartthings module
+ * If you didn't originally install with -g then simple omit that here.
+7. Start Homebridge. After displaying the network PIN, it should display "Direct Connect Is Listening On XXX.XXX.XXX.XXX:8000" followed by "SmartThings Hub Communication Established".
+ * If it displays Direct Connect is Listening... but not Communications Established then check your computer's local firewall for anything blocking TCP 8000 and make sure the listed IP address is on the same network as the SmartThings Hub.
+8. Test the process. Make sure your lights show up in Home. Use the Smartthings app to toggle a light on or off and make sure the change is reflected on the IOS device. The Home app should update the status before you have time to switch from Smartthings back to Home.
+9. All done.
+
 ## Installation
 
 Installation comes in two parts:
