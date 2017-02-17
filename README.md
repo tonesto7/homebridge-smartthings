@@ -52,6 +52,7 @@ The subscription key and channel are retrieved from the Smartapp to make sure th
  * If you didn't originally install with -g then simple omit that here.
 7. Start Homebridge. After displaying the network PIN, it should display "Direct Connect Is Listening On XXX.XXX.XXX.XXX:8000" followed by "SmartThings Hub Communication Established".
  * If it displays Direct Connect is Listening... but not Communications Established then check your computer's local firewall for anything blocking TCP 8000 and make sure the listed IP address is on the same network as the SmartThings Hub.
+ * If you get RateLimit errors even after upgrading and using Direct Connect, you may need to delete and re-install the SmartApp and reconfigure all your devices.
 8. Test the process. Make sure your lights show up in Home. Use the Smartthings app to toggle a light on or off and make sure the change is reflected on the IOS device. The Home app should update the status before you have time to switch from Smartthings back to Home.
 9. All done.
 
