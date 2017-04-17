@@ -126,7 +126,7 @@ SmartThingsPlatform.prototype = {
 
 			else if (that.update_method==='pubnub') { //Uses user's PubNub account
 				that.api.getSubscriptionService(function(data) {
-					pubnub = new PubNub({ subscribeKey : data.pubnub_subscribekey });
+					pubnub = new PubNub({ subscribeKey : data.pubnub_subscribekey, ssl: true });
 					pubnub.addListener({
 							status: function(statusEvent) { if (statusEvent.category==='PNReconnectedCategory') that.reloadData(null); },
 							message: function(message) { that.processFieldUpdate(message.message, that); } });
