@@ -27,7 +27,7 @@ def copyConfig() {
     }
     dynamicPage(name: "copyConfig", title: "Configure Devices", install:true, uninstall:true) {
         section("Select devices to include in the /devices API call") {
-            paragraph "Version 0.5.2"
+            paragraph "Version 0.5.4"
             input "deviceList", "capability.refresh", title: "Most Devices", multiple: true, required: false
             input "sensorList", "capability.sensor", title: "Sensor Devices", multiple: true, required: false
             input "switchList", "capability.switch", title: "All Switches", multiple: true, required: false
@@ -57,7 +57,8 @@ def copyConfig() {
 def renderDevices() {
     def deviceData = []
         deviceList.each { 
-        	deviceData << [name: it.displayName,
+        	try {
+            deviceData << [name: it.displayName,
     				basename: it.name,
     				deviceid: it.id, 
                     status: it.status,
@@ -68,9 +69,13 @@ def renderDevices() {
                     commands: deviceCommandList(it), 
                     attributes: deviceAttributeList(it)
                     ]
-		}    
-        sensorList.each  { 
-        	deviceData << [name: it.displayName,
+      		} catch (e) {
+      			log.error("Error Occurred Parsing Device "+it.displayName+", Error " + e)
+      		}
+        }    
+        sensorList.each { 
+        	try {
+            deviceData << [name: it.displayName,
     				basename: it.name,
     				deviceid: it.id, 
                     status: it.status,
@@ -81,9 +86,13 @@ def renderDevices() {
                     commands: deviceCommandList(it), 
                     attributes: deviceAttributeList(it)
                     ]
-		}
-        switchList.each  { 
-        	deviceData << [name: it.displayName,
+      		} catch (e) {
+      			log.error("Error Occurred Parsing Device "+it.displayName+", Error " + e)
+      		}
+        }    
+        switchList.each { 
+        	try {
+            deviceData << [name: it.displayName,
     				basename: it.name,
     				deviceid: it.id, 
                     status: it.status,
@@ -94,7 +103,10 @@ def renderDevices() {
                     commands: deviceCommandList(it), 
                     attributes: deviceAttributeList(it)
                     ]
-		}
+      		} catch (e) {
+      			log.error("Error Occurred Parsing Device "+it.displayName+", Error " + e)
+      		}
+        }    
     return deviceData
 }
 
@@ -128,6 +140,7 @@ def initialize() {
     registerAll()
 	state.subscriptionRenewed = 0
     subscribe(location, null, HubResponseEvent, [filterEvents:false])
+    log.debug "0.5.4"
 }
 
 def authError() {
@@ -158,7 +171,8 @@ def renderLocation() {
     	name: location.name,
     	temperature_scale: location.temperatureScale,
     	zip_code: location.zipCode,
-        hubIP: location.hubs[0].localIP
+        hubIP: location.hubs[0].localIP,
+        smartapp_version: '0.5.4'
   	]
 }
 def CommandReply(statusOut, messageOut) {
@@ -379,6 +393,17 @@ def HubResponseEvent(evt) {
 	log.debug(evt.description)
 }
 
+def locationHandler(evt) {
+    def description = evt.description
+    def hub = evt?.hubId
+
+    log.debug "cp desc: " + description
+    if (description.count(",") > 4)
+    {
+def bodyString = new String(description.split(',')[5].split(":")[1].decodeBase64())
+log.debug(bodyString)
+}
+}
 
 def getSubscriptionService() {
 	def replyData =
