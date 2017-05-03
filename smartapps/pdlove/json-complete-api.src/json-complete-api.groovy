@@ -10,9 +10,9 @@ definition(
     author: "Paul Lovelace",
     description: "API for JSON with complete set of devices",
     category: "SmartThings Labs",
-    iconUrl:   "https://dl.dropboxusercontent.com/u/17876795/JSON%401.png",
-    iconX2Url: "https://dl.dropboxusercontent.com/u/17876795/JSON%402.png",
-    iconX3Url: "https://dl.dropboxusercontent.com/u/17876795/JSON%403.png",
+    iconUrl:   "https://raw.githubusercontent.com/pdlove/homebridge-smartthings/master/smartapps/JSON%401.png",
+    iconX2Url: "https://raw.githubusercontent.com/pdlove/homebridge-smartthings/master/smartapps/JSON%402.png",
+    iconX3Url: "https://raw.githubusercontent.com/pdlove/homebridge-smartthings/master/smartapps/JSON%403.png",
     oauth: true)
 
 
@@ -27,7 +27,7 @@ def copyConfig() {
     }
     dynamicPage(name: "copyConfig", title: "Configure Devices", install:true, uninstall:true) {
         section("Select devices to include in the /devices API call") {
-            paragraph "Version 0.5.4"
+            paragraph "Version 0.5.5"
             input "deviceList", "capability.refresh", title: "Most Devices", multiple: true, required: false
             input "sensorList", "capability.sensor", title: "Sensor Devices", multiple: true, required: false
             input "switchList", "capability.switch", title: "All Switches", multiple: true, required: false
@@ -140,7 +140,7 @@ def initialize() {
     registerAll()
 	state.subscriptionRenewed = 0
     subscribe(location, null, HubResponseEvent, [filterEvents:false])
-    log.debug "0.5.4"
+    log.debug "0.5.5"
 }
 
 def authError() {
@@ -172,7 +172,7 @@ def renderLocation() {
     	temperature_scale: location.temperatureScale,
     	zip_code: location.zipCode,
         hubIP: location.hubs[0].localIP,
-        smartapp_version: '0.5.4'
+        smartapp_version: '0.5.5'
   	]
 }
 def CommandReply(statusOut, messageOut) {
