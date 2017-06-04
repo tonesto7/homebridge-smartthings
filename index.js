@@ -106,7 +106,7 @@ SmartThingsPlatform.prototype = {
 		var foundAccessories = [];
 		this.deviceLookup = [];
 		this.unknownCapabilities = [];
-		this.knownCapabilities = ["Switch", "Color Control", "Battery", "Polling", "Lock", "Refresh", "Lock Codes", "Sensor", "Actuator",
+		this.knownCapabilities = ["Switch", "Light", "Color Control", "Battery", "Polling", "Lock", "Refresh", "Lock Codes", "Sensor", "Actuator",
 			"Configuration", "Switch Level", "Temperature Measurement", "Motion Sensor", "Color Temperature",
 			"Contact Sensor", "Three Axis", "Acceleration Sensor", "Momentary", "Door Control", "Garage Door Control",
 			"Relative Humidity Measurement", "Presence Sensor", "Thermostat", "Energy Meter", "Power Meter",
