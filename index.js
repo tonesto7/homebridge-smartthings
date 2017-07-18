@@ -34,12 +34,12 @@ function SmartThingsPlatform(log, config) {
 
 	this.update_seconds = config["update_seconds"];
 	if (!this.update_seconds) this.update_seconds = 30; //30 seconds is the new default
-	if (this.update_method==='api' && this.update_seconds<30) 
+	if (this.update_method==='api' && this.update_seconds<30)
 		that.log("The setting for update_seconds is lower than the SmartThings recommended value. Please switch to direct or PubNub using a free subscription for real-time updates.");
 
 	this.direct_port = config["direct_port"];
 	if (!this.direct_port) this.direct_port = 8000;
-	
+
 	this.direct_ip = config["direct_ip"];
 	if (!this.direct_ip) this.direct_ip = smartthing_getIP();
 
@@ -126,11 +126,11 @@ SmartThingsPlatform.prototype = {
 
 			else if (that.update_method==='pubnub') { //Uses user's PubNub account
 				that.api.getSubscriptionService(function(data) {
-					pubnub = new PubNub({ subscribeKey : data.pubnub_subscribekey });
-					pubnub.addListener({ 
+					pubnub = new PubNub({ subscribeKey : data.pubnub_subscribekey, ssl: true });
+					pubnub.addListener({
 							status: function(statusEvent) { if (statusEvent.category==='PNReconnectedCategory') that.reloadData(null); },
 							message: function(message) { that.processFieldUpdate(message.message, that); } });
-        			pubnub.subscribe({ channels: [ that.pubnub_channel ] });	
+        			pubnub.subscribe({ channels: [ that.pubnub_channel ] });
 				});
 			}
 
@@ -179,28 +179,31 @@ SmartThingsPlatform.prototype = {
 };
 
 function smartthing_getIP() {
+	var interfaceNameRequested = process.env.HBST_INTERFACE_NAME;
+
 	var myIP = '';
 	var ifaces = os.networkInterfaces();
 	Object.keys(ifaces).forEach(function (ifname) {
-  		var alias = 0;
-		ifaces[ifname].forEach(function (iface) {
-    		if ('IPv4' !== iface.family || iface.internal !== false) {
-      			// skip over internal (i.e. 127.0.0.1) and non-ipv4 addresses
-      			return;
-    		}
-    	myIP = iface.address;
-  		});
+  	var alias = 0;
+		if (interfaceNameRequested == null || interfaceNameRequested == ifname)
+			ifaces[ifname].forEach(function (iface) {
+	    		if ('IPv4' !== iface.family || iface.internal !== false) {
+	      			// skip over internal (i.e. 127.0.0.1) and non-ipv4 addresses
+	      			return;
+	    		}
+	    		myIP = iface.address;
+	  	});
 	});
 	return myIP;
 }
 function smartthings_SetupHTTPServer(mySmartThings) {
 	//Get the IP address that we will send to the SmartApp. This can be overridden in the config file.
-	
+
 	//Start the HTTP Server
-	const server = http.createServer(function(request,response) { 
+	const server = http.createServer(function(request,response) {
 				smartthings_HandleHTTPResponse(request, response, mySmartThings)});
 
-	server.listen(mySmartThings.direct_port, (err) => {  
+	server.listen(mySmartThings.direct_port, (err) => {
   		if (err) {
     		mySmartThings.log('something bad happened', err);
 			return '';
@@ -211,7 +214,7 @@ function smartthings_SetupHTTPServer(mySmartThings) {
 }
 
 function smartthings_HandleHTTPResponse(request, response, mySmartThings)  {
-	if (request.url=='/initial') 
+	if (request.url=='/initial')
 		mySmartThings.log("SmartThings Hub Communication Established");
 if (request.url=='/update') {
 		var newChange = { device: request.headers["change_device"],
