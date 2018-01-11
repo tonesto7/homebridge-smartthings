@@ -23,6 +23,7 @@ function SmartThingsPlatform(log, config) {
 	this.app_url = config["app_url"];
 	this.app_id = config["app_id"];
 	this.access_token = config["access_token"];
+	this.excludedCapabilities = config["excluded_capabilities"];
 
 	//This is how often it does a full refresh
 	this.polling_seconds = config["polling_seconds"];
@@ -63,6 +64,8 @@ SmartThingsPlatform.prototype = {
 					for (var i = 0; i < devices.length; i++) {
 						var device = devices[i];
 
+						device.excludedCapabilities = that.excludedCapabilities[device.deviceid] || ["None"]
+
 						var accessory = undefined;
 						if (that.deviceLookup[device.deviceid]) {
 							accessory = that.deviceLookup[device.deviceid];
@@ -74,7 +77,7 @@ SmartThingsPlatform.prototype = {
 								if ((accessory.services.length <= 1) || (accessory.deviceGroup == "unknown")) {
 									if (that.firstpoll) that.log("Device Skipped - Group " + accessory.deviceGroup + ", Name " + accessory.name + ", ID " + accessory.deviceid + ", JSON: " + JSON.stringify(device));
 								} else {
-									that.log("Device Added - Group " + accessory.deviceGroup + ", Name " + accessory.name + ", ID " + accessory.deviceid)//+", JSON: "+ JSON.stringify(device));
+									that.log("Device Added - Group " + accessory.deviceGroup + ", Name " + accessory.name + ", ID " + accessory.deviceid + ", Excluded: " + accessory.device.excludedCapabilities)//+", JSON: "+ JSON.stringify(device));
 									that.deviceLookup[accessory.deviceid] = accessory;
 									foundAccessories.push(accessory);
 								}
