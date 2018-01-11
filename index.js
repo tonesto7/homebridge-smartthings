@@ -19,7 +19,7 @@ module.exports = function (homebridge) {
 };
 
 function SmartThingsPlatform(log, config) {
-	// Load Wink Authentication From Config File
+	// Load SmartThings Authentication From Config File
 	this.app_url = config["app_url"];
 	this.app_id = config["app_id"];
 	this.access_token = config["access_token"];
