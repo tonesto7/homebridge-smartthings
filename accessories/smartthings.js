@@ -52,8 +52,14 @@ function SmartThingsAccessory(platform, device) {
 
     this.deviceGroup = "unknown"; //This way we can easily tell if we set a device group
 	var thisCharacteristic;
-	
-    if (device.capabilities["Switch Level"] !== undefined) {
+    var capability;
+    
+    if (device.excludedCapabilities.indexOf("*") >= 0){
+        return null
+    }
+
+    capability = "Switch Level";
+    if (device.capabilities[capability] !== undefined && device.excludedCapabilities.indexOf(capability) < 0) {
         if (device.commands.levelOpenClose) {
             //This is a Window Shade
             this.deviceGroup = "shades"
@@ -117,7 +123,8 @@ function SmartThingsAccessory(platform, device) {
         }
     }
 
-    if (device.capabilities["Garage Door Control"] !== undefined) {
+    capability = "Garage Door Control";
+    if (device.capabilities[capability] !== undefined && device.excludedCapabilities.indexOf(capability) < 0) {
         this.deviceGroup = "garage_doors";
 		
         thisCharacteristic = this.getaddService(Service.GarageDoorOpener).getCharacteristic(Characteristic.TargetDoorState)
@@ -161,7 +168,8 @@ function SmartThingsAccessory(platform, device) {
         this.getaddService(Service.GarageDoorOpener).setCharacteristic(Characteristic.ObstructionDetected, false);
     }
 
-    if (device.capabilities["Lock"] !== undefined) {
+    capability = "Lock";
+    if (device.capabilities[capability] !== undefined && device.excludedCapabilities.indexOf(capability) < 0) {
         this.deviceGroup = "locks";
 		
         thisCharacteristic = this.getaddService(Service.LockMechanism).getCharacteristic(Characteristic.LockCurrentState)
@@ -217,11 +225,14 @@ function SmartThingsAccessory(platform, device) {
 // Thinking of implementing this as a Door service.
 //    }
 
-    if (device.capabilities["Button"] !== undefined) {
+    capability = "Button";
+    if (device.capabilities[capability] !== undefined && device.excludedCapabilities.indexOf(capability) < 0) {
         this.deviceGroup = " button";
         
     }
-    if (device.capabilities["Switch"] !== undefined && this.deviceGroup == "unknown") {
+
+    capability = "Switch";
+    if (device.capabilities[capability] !== undefined && device.excludedCapabilities.indexOf(capability) < 0 && this.deviceGroup == "unknown") {
         this.deviceGroup = "switch";
         thisCharacteristic = this.getaddService(Service.Switch).getCharacteristic(Characteristic.On)
         thisCharacteristic.on('get', function(callback) { callback(null, that.device.attributes.switch == "on"); })
@@ -241,7 +252,8 @@ function SmartThingsAccessory(platform, device) {
 	}
     }
 
-    if ((device.capabilities["Smoke Detector"] !== undefined) && (that.device.attributes.smoke)) {
+    capability = "Smoke Detector";
+    if (device.capabilities[capability] !== undefined && device.excludedCapabilities.indexOf(capability) < 0 && that.device.attributes.smoke) {
         this.deviceGroup = "detectors";
 
         thisCharacteristic = this.getaddService(Service.SmokeSensor).getCharacteristic(Characteristic.SmokeDetected)
@@ -254,7 +266,8 @@ function SmartThingsAccessory(platform, device) {
  		that.platform.addAttributeUsage("smoke", this.deviceid, thisCharacteristic);
    }
 
-    if ((device.capabilities["Carbon Monoxide Detector"] !== undefined) && (that.device.attributes.carbonMonoxide)) {
+   capability = "Carbon Monoxide Detector";
+    if (device.capabilities[capability] !== undefined && device.excludedCapabilities.indexOf(capability) < 0 && that.device.attributes.carbonMonoxide) {
         this.deviceGroup = "detectors";
         
 		thisCharacteristic = this.getaddService(Service.CarbonMonoxideSensor).getCharacteristic(Characteristic.CarbonMonoxideDetected)
@@ -267,7 +280,8 @@ function SmartThingsAccessory(platform, device) {
  		that.platform.addAttributeUsage("carbonMonoxide", this.deviceid, thisCharacteristic);
     }
 
-    if (device.capabilities["Motion Sensor"] !== undefined) {
+    capability = "Motion Sensor";
+    if (device.capabilities[capability] !== undefined && device.excludedCapabilities.indexOf(capability) < 0) {
         if (this.deviceGroup == 'unknown') this.deviceGroup = "sensor";
         
 		thisCharacteristic = this.getaddService(Service.MotionSensor).getCharacteristic(Characteristic.MotionDetected)
@@ -275,7 +289,8 @@ function SmartThingsAccessory(platform, device) {
  		that.platform.addAttributeUsage("motion", this.deviceid, thisCharacteristic);
     }
 
-    if (device.capabilities["Water Sensor"] !== undefined) {
+    capability = "Water Sensor";
+    if (device.capabilities[capability] !== undefined && device.excludedCapabilities.indexOf(capability) < 0) {
         if (this.deviceGroup == 'unknown') this.deviceGroup = "sensor";
 		
         thisCharacteristic = this.getaddService(Service.LeakSensor).getCharacteristic(Characteristic.LeakDetected)
@@ -286,7 +301,8 @@ function SmartThingsAccessory(platform, device) {
  		that.platform.addAttributeUsage("water", this.deviceid, thisCharacteristic);
     }
 
-    if (device.capabilities["Presence Sensor"] !== undefined) {
+    capability = "Presence Sensor";
+    if (device.capabilities[capability] !== undefined && device.excludedCapabilities.indexOf(capability) < 0) {
         if (this.deviceGroup == 'unknown') this.deviceGroup = "sensor";
 		
         thisCharacteristic = this.getaddService(Service.OccupancySensor).getCharacteristic(Characteristic.OccupancyDetected)
@@ -294,14 +310,16 @@ function SmartThingsAccessory(platform, device) {
  		that.platform.addAttributeUsage("presence", this.deviceid, thisCharacteristic);
     }
 
-    if (device.capabilities["Relative Humidity Measurement"] !== undefined) {
+    capability = "Relative Humidity Measurement";
+    if (device.capabilities[capability] !== undefined && device.excludedCapabilities.indexOf(capability) < 0) {
         if (this.deviceGroup == 'unknown') this.deviceGroup = "sensor";
         thisCharacteristic = this.getaddService(Service.HumiditySensor).getCharacteristic(Characteristic.CurrentRelativeHumidity)
         thisCharacteristic.on('get', function(callback) { callback(null, Math.round(that.device.attributes.humidity)); });
 		that.platform.addAttributeUsage("humidity", this.deviceid, thisCharacteristic);
     }
 
-    if (device.capabilities["Temperature Measurement"] !== undefined) {
+    capability = "Temperature Measurement";
+    if (device.capabilities[capability] !== undefined && device.excludedCapabilities.indexOf(capability) < 0) {
         if (this.deviceGroup == 'unknown') this.deviceGroup = "sensor";
         thisCharacteristic = this.getaddService(Service.TemperatureSensor).getCharacteristic(Characteristic.CurrentTemperature)
         thisCharacteristic.on('get', function(callback) {
@@ -313,7 +331,8 @@ function SmartThingsAccessory(platform, device) {
 		that.platform.addAttributeUsage("temperature", this.deviceid, thisCharacteristic);
     }
 
-    if (device.capabilities["Contact Sensor"] !== undefined) {
+    capability = "Contact Sensor";
+    if (device.capabilities[capability] !== undefined && device.excludedCapabilities.indexOf(capability) < 0) {
         if (this.deviceGroup == 'unknown') this.deviceGroup = "sensor";
         thisCharacteristic = this.getaddService(Service.ContactSensor).getCharacteristic(Characteristic.ContactSensorState)
         thisCharacteristic.on('get', function(callback) {
@@ -326,7 +345,8 @@ function SmartThingsAccessory(platform, device) {
  		that.platform.addAttributeUsage("contact", this.deviceid, thisCharacteristic);
    }
 
-    if (device.capabilities["Battery"] !== undefined) {
+    capability = "Battery";
+    if (device.capabilities[capability] !== undefined && device.excludedCapabilities.indexOf(capability) < 0) {
         thisCharacteristic = this.getaddService(Service.BatteryService).getCharacteristic(Characteristic.BatteryLevel)
         thisCharacteristic.on('get', function(callback) { callback(null, Math.round(that.device.attributes.battery)); });
 		that.platform.addAttributeUsage("battery", this.deviceid, thisCharacteristic);
@@ -343,28 +363,33 @@ function SmartThingsAccessory(platform, device) {
 		that.platform.addAttributeUsage("battery", this.deviceid, thisCharacteristic);
     }
 
-    if (device.capabilities["Energy Meter"] !== undefined) {
+    capability = "Energy Meter";
+    if (device.capabilities[capability] !== undefined && device.excludedCapabilities.indexOf(capability) < 0) {
         this.deviceGroup = 'EnergyMeter';
         thisCharacteristic = this.getaddService(Service.Outlet).addCharacteristic(EnergyCharacteristics.TotalConsumption1)
         thisCharacteristic.on('get', function(callback) { callback(null, Math.round(that.device.attributes.energy)); });
 		that.platform.addAttributeUsage("energy", this.deviceid, thisCharacteristic);
 	}
 
-    if (device.capabilities["Power Meter"] !== undefined) {	
+    capability = "Power Meter";
+    if (device.capabilities[capability] !== undefined && device.excludedCapabilities.indexOf(capability) < 0) {	
         thisCharacteristic = this.getaddService(Service.Outlet).addCharacteristic(EnergyCharacteristics.CurrentConsumption1)
         thisCharacteristic.on('get', function(callback) { callback(null, Math.round(that.device.attributes.power)); });
 		that.platform.addAttributeUsage("power", this.deviceid, thisCharacteristic);
     }
 
-    if (device.capabilities["Acceleration Sensor"] !== undefined) {
+    capability = "Acceleration Sensor";
+    if (device.capabilities[capability] !== undefined && device.excludedCapabilities.indexOf(capability) < 0) {
         if (this.deviceGroup == 'unknown') this.deviceGroup = "sensor";
     }
 
-    if (device.capabilities["Three Axis"] !== undefined) {
+    capability = "Three Axis";
+    if (device.capabilities[capability] !== undefined && device.excludedCapabilities.indexOf(capability) < 0) {
         if (this.deviceGroup == 'unknown') this.deviceGroup = "sensor";
     }
 
-	if (device.capabilities["Thermostat"] !== undefined) {
+    capability = "Thermostat";
+	if (device.capabilities[capability] !== undefined && device.excludedCapabilities.indexOf(capability) < 0) {
         this.deviceGroup = "thermostats";
         
 		thisCharacteristic = this.getaddService(Service.Thermostat).getCharacteristic(Characteristic.CurrentHeatingCoolingState)
