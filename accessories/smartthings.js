@@ -86,8 +86,7 @@ function SmartThingsAccessory(platform, device) {
             	    if (value > 0)
             	    	that.platform.api.runCommand(callback, that.deviceid, "setLevel", {value1: value }); });
 			that.platform.addAttributeUsage("level", this.deviceid, thisCharacteristic);
-        
-        } else if (device.capabilities["Light"] !== undefined) {
+        } else if (device.commands.setLevel) {
             this.deviceGroup = "lights";
             thisCharacteristic = this.getaddService(Service.Lightbulb).getCharacteristic(Characteristic.On)
             thisCharacteristic.on('get', function(callback) { callback(null, that.device.attributes.switch == "on"); });
