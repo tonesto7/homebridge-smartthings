@@ -436,6 +436,10 @@ function SmartThingsAccessory(platform, device) {
         }
 
         thisCharacteristic = this.getaddService(Service.Thermostat).getCharacteristic(Characteristic.CurrentTemperature)
+        thisCharacteristic.setProps({
+            minValue: (-100 - 32) / 1.8,
+            maxValue: (100 - 32) / 1.8
+        });
         thisCharacteristic.on('get', function(callback) {
                 if (that.platform.temperature_unit == 'C')
                     callback(null, Math.round(that.device.attributes.temperature*10)/10);
@@ -443,74 +447,71 @@ function SmartThingsAccessory(platform, device) {
                     callback(null, Math.round(((that.device.attributes.temperature - 32) / 1.8)*10)/10);
             });
 		that.platform.addAttributeUsage("temperature", this.deviceid, thisCharacteristic);
+  //       thisCharacteristic = this.getaddService(Service.Thermostat).getCharacteristic(Characteristic.TargetTemperature)
+  //       thisCharacteristic.on('get', function(callback) {
+  //               var temp = undefined;
+  //               switch (that.device.attributes.thermostatMode) {
+  //                   case "cool":
+  //                       temp = that.device.attributes.coolingSetpoint;
+  //                       break;
+  //                   case "emergency heat":
+  //                   case "heat":
+  //                       temp = that.device.attributes.heatingSetpoint;
+  //                       break;
+  //                   default: //This should only refer to auto
+  //                      // Choose closest target as single target
+  //                       var high = that.device.attributes.coolingSetpoint;
+  //                       var low = that.device.attributes.heatingSetpoint;
+  //                       var cur = that.device.attributes.temperature;
+  //                       temp = Math.abs(high - cur) < Math.abs(cur - low) ? high : low;
+  //                       break;
+  //               }
+  //               if (!temp) 
+  //                   callback('Unknown');
+  //               else if (that.platform.temperature_unit == 'C')
+  //                   callback(null, Math.round(temp*10)/10);
+  //               else
+  //                   callback(null, Math.round(((temp - 32) / 1.8)*10)/10);
+  //           })
+  //       thisCharacteristic.on('set', function(value, callback) {
+  //               //Convert the Celsius value to the appropriate unit for Smartthings
+  //               var temp = value;
+  //               if (that.platform.temperature_unit == 'C')
+  //                   temp = value;
+  //               else
+  //                   temp = ((value * 1.8) + 32);
 
-        thisCharacteristic = this.getaddService(Service.Thermostat).getCharacteristic(Characteristic.TargetTemperature)
-        thisCharacteristic.on('get', function(callback) {
-                var temp = undefined;
-                switch (that.device.attributes.thermostatMode) {
-                    case "cool":
-                        temp = that.device.attributes.coolingSetpoint;
-                        break;
-                    case "emergency heat":
-                    case "heat":
-                        temp = that.device.attributes.heatingSetpoint;
-                        break;
-                    default: //This should only refer to auto
-                       // Choose closest target as single target
-                        var high = that.device.attributes.coolingSetpoint;
-                        var low = that.device.attributes.heatingSetpoint;
-                        var cur = that.device.attributes.temperature;
-                        temp = Math.abs(high - cur) < Math.abs(cur - low) ? high : low;
-                        break;
-                }
-                if (!temp) 
-                    callback('Unknown');
-                else if (that.platform.temperature_unit == 'C')
-                    callback(null, Math.round(temp*10)/10);
-                else
-                    callback(null, Math.round(((temp - 32) / 1.8)*10)/10);
-            })
-        thisCharacteristic.on('set', function(value, callback) {
-                //Convert the Celsius value to the appropriate unit for Smartthings
-                var temp = value;
-                if (that.platform.temperature_unit == 'C')
-                    temp = value;
-                else
-                    temp = ((value * 1.8) + 32);
-
-                //Set the appropriate temperature unit based on the mode
-                switch (that.device.attributes.thermostatMode) {
-                    case "cool":
-                        that.platform.api.runCommand(callback, that.deviceid, "setCoolingSetpoint", {
-                            value1: temp
-                        });
-                        that.device.attributes.coolingSetpoint = temp;
-                        break;
-                    case "emergency heat":
-                    case "heat":
-                        that.platform.api.runCommand(callback, that.deviceid, "setHeatingSetpoint", {
-                            value1: temp
-                        });
-                        that.device.attributes.heatingSetpoint = temp;
-                        break;
-                    default: //This should only refer to auto
-                       	// Choose closest target as single target
-                        var high = that.device.attributes.coolingSetpoint;
-                        var low = that.device.attributes.heatingSetpoint;
-                        var cur = that.device.attributes.temperature;
-                        var isHighTemp = Math.abs(high - cur) < Math.abs(cur - low);
-                        if (isHighTemp) {
-                           that.platform.api.runCommand(callback, that.deviceid, "setCoolingSetpoint", { value1: temp });
-                        } else {
-                           that.platform.api.runCommand(null, that.deviceid, "setHeatingSetpoint", { value1: temp });
-                        }
-                        break;
-                }
-            });
-		that.platform.addAttributeUsage("thermostatMode", this.deviceid, thisCharacteristic);
-		that.platform.addAttributeUsage("coolingSetpoint", this.deviceid, thisCharacteristic);
-		that.platform.addAttributeUsage("heatingSetpoint", this.deviceid, thisCharacteristic);
-		that.platform.addAttributeUsage("temperature", this.deviceid, thisCharacteristic);
+  //               //Set the appropriate temperature unit based on the mode
+  //               switch (that.device.attributes.thermostatMode) {
+  //                   case "cool":
+  //                       that.platform.api.runCommand(callback, that.deviceid, "setCoolingSetpoint", {
+  //                           value1: temp
+  //                       });
+  //                       that.device.attributes.coolingSetpoint = temp;
+  //                       break;
+  //                   case "emergency heat":
+  //                   case "heat":
+  //                       that.platform.api.runCommand(callback, that.deviceid, "setHeatingSetpoint", {
+  //                           value1: temp
+  //                       });
+  //                       that.device.attributes.heatingSetpoint = temp;
+  //                       break;
+  //                   default: //This should only refer to auto
+  //                      	// Choose closest target as single target
+  //                       // var high = that.device.attributes.coolingSetpoint;
+  //                       // var low = that.device.attributes.heatingSetpoint;
+  //                       // var cur = that.device.attributes.temperature;
+  //                       // var isHighTemp = Math.abs(high - cur) < Math.abs(cur - low);
+  //                       // if (isHighTemp) {
+  //                          that.platform.api.runCommand(callback, that.deviceid, "setCoolingSetpoint", { value1: temp });
+  //                       // } else {
+  //                          that.platform.api.runCommand(null, that.deviceid, "setHeatingSetpoint", { value1: temp });
+  //                       // }
+  //                       break;
+  //               }
+  //           });
+		// that.platform.addAttributeUsage("coolingSetpoint", this.deviceid, thisCharacteristic);
+		// that.platform.addAttributeUsage("heatingSetpoint", this.deviceid, thisCharacteristic);
 
         thisCharacteristic = this.getaddService(Service.Thermostat).getCharacteristic(Characteristic.TemperatureDisplayUnits)
         thisCharacteristic.on('get', function(callback) {
@@ -519,9 +520,13 @@ function SmartThingsAccessory(platform, device) {
                 else
                     callback(null, Characteristic.TemperatureDisplayUnits.FAHRENHEIT);
             });
-		//that.platform.addAttributeUsage("temperature_unit", "platform", thisCharacteristic);
+		that.platform.addAttributeUsage("temperature_unit", "platform", thisCharacteristic);
 
         thisCharacteristic = this.getaddService(Service.Thermostat).getCharacteristic(Characteristic.HeatingThresholdTemperature)
+        thisCharacteristic.setProps({
+            minValue: (60 - 32) / 1.8,
+            maxValue: (80 - 32) / 1.8
+        });
         thisCharacteristic.on('get', function(callback) {
                 if (that.platform.temperature_unit == 'C')
                     callback(null, Math.round(that.device.attributes.heatingSetpoint*10)/10);
@@ -543,6 +548,10 @@ function SmartThingsAccessory(platform, device) {
 		that.platform.addAttributeUsage("heatingSetpoint", this.deviceid, thisCharacteristic);
 
         thisCharacteristic = this.getaddService(Service.Thermostat).getCharacteristic(Characteristic.CoolingThresholdTemperature)
+        thisCharacteristic.setProps({
+            minValue: (60 - 32) / 1.8,
+            maxValue: (80 - 32) / 1.8
+        });
         thisCharacteristic.on('get', function(callback) {
                 if (that.platform.temperature_unit == 'C')
                     callback(null, Math.round((that.device.attributes.coolingSetpoint*10))/10);
