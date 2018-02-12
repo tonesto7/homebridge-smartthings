@@ -313,7 +313,7 @@ function SmartThingsAccessory(platform, device) {
 		that.platform.addAttributeUsage("temperature", this.deviceid, thisCharacteristic);
     }
 
-    if (device.capabilities["Contact Sensor"] !== undefined) {
+    if (device.capabilities["Contact Sensor"] !== undefined && device.capabilities["Garage Door Control"] === undefined) {
         if (this.deviceGroup == 'unknown') this.deviceGroup = "sensor";
         thisCharacteristic = this.getaddService(Service.ContactSensor).getCharacteristic(Characteristic.ContactSensorState)
         thisCharacteristic.on('get', function(callback) {
