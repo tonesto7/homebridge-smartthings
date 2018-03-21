@@ -63,6 +63,7 @@ SmartThingsPlatform.prototype = {
 				var populateDevices = function (devices) {
 					for (var i = 0; i < devices.length; i++) {
 						var device = devices[i];
+						device.excludedCapabilities = that.excludedCapabilities[device.deviceid] || ["None"]
 
 						var accessory = undefined;
 						if (that.deviceLookup[device.deviceid]) {
