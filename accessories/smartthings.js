@@ -54,7 +54,7 @@ function SmartThingsAccessory(platform, device) {
 	var thisCharacteristic;
 	
     if (device.capabilities["Switch Level"] !== undefined) {
-        if (device.commands.levelOpenClose) {
+        if (device.commands.levelOpenClose || device.commands.presetPosition) {
             //This is a Window Shade
             this.deviceGroup = "shades"
 
