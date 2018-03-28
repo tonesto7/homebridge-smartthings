@@ -311,6 +311,13 @@ function SmartThingsAccessory(platform, device) {
             });
 		that.platform.addAttributeUsage("temperature", this.deviceid, thisCharacteristic);
     }
+	
+	if (device.capabilities["Illuminance Measurement"] !== undefined) {
+        if (this.deviceGroup == 'unknown') this.deviceGroup = "sensor";
+        thisCharacteristic = this.getaddService(Service.LightSensor).getCharacteristic(Characteristic.CurrentAmbientLightLevel)
+        thisCharacteristic.on('get', function(callback) { callback(null, Math.round(that.device.attributes.illuminance)); });
+		that.platform.addAttributeUsage("illuminance", this.deviceid, thisCharacteristic);
+    }
 
     if (device.capabilities["Contact Sensor"] !== undefined && device.capabilities["Garage Door Control"] === undefined) {
         if (this.deviceGroup == 'unknown') this.deviceGroup = "sensor";
