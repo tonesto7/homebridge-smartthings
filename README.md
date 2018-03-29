@@ -95,7 +95,7 @@ If you installed the previous update that doesn't allow selecting devices, you n
 
 ### Config.json Settings
 
-Example of all settings. Not all ssettings are required. Read the breakdown below.
+Example of all settings. Not all settings are required. Read the breakdown below.
 ```
 	{
 	   "platform": "homebridge-smartthings.SmartThings",
@@ -107,7 +107,12 @@ Example of all settings. Not all ssettings are required. Read the breakdown belo
         "update_method": "direct",
         "direct_ip": "192.168.0.45",
         "direct_port": 8000,
-        "api_seconds": 30
+        "api_seconds": 30,
+        "excluded_capabilities": {
+            "SMARTTHINGS-DEVICE-ID-1" : [
+                "Switch",
+                "Temperature Measurement"
+            ]
 	}
 ```
 * "platform" and "name"
@@ -144,6 +149,11 @@ Example of all settings. Not all ssettings are required. Read the breakdown belo
 **_Optional_** Defaults to 30
  * This setting only applies if update_method is api.
  * This is how often the api will poll for updates. This update method is not recommended.
+
+* "excluded_capabilities"
+**_Optional_** Defaults to None
+ * Specify the SmartThings device by ID and the associated capabilities you want homebridge-smartthings to ignore
+ * This prevents a SmartThings device creating unwanted or redundant HomeKit accessories
 
 ##Reporting Devices for Development
 

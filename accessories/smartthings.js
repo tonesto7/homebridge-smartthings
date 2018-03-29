@@ -38,6 +38,14 @@ function SmartThingsAccessory(platform, device) {
     Accessory.call(this, this.name, id);
     var that = this;
 
+	//Removing excluded capabilities from config
+	for (var i = 0; i < device.excludedCapabilities.length; i++) {
+		excludedCapability = device.excludedCapabilities[i];
+		if (device.capabilities[excludedCapability] !== undefined) {
+			platform.log.debug("Removing capability: "+excludedCapability+" for device: "+device.name)
+			delete device.capabilities[excludedCapability];
+		}
+	}
     //Get the Capabilities List
     for (var index in device.capabilities) {
         if ((platform.knownCapabilities.indexOf(index) == -1) && (platform.unknownCapabilities.indexOf(index) == -1))

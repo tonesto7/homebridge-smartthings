@@ -23,6 +23,7 @@ function SmartThingsPlatform(log, config) {
 	this.app_url = config["app_url"];
 	this.app_id = config["app_id"];
 	this.access_token = config["access_token"];
+    this.excludedCapabilities = config["excluded_capabilities"];
 
 	//This is how often it does a full refresh
 	this.polling_seconds = config["polling_seconds"];
@@ -62,6 +63,7 @@ SmartThingsPlatform.prototype = {
 				var populateDevices = function (devices) {
 					for (var i = 0; i < devices.length; i++) {
 						var device = devices[i];
+						device.excludedCapabilities = that.excludedCapabilities[device.deviceid] || ["None"]
 
 						var accessory = undefined;
 						if (that.deviceLookup[device.deviceid]) {
