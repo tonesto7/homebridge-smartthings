@@ -1,7 +1,7 @@
 {
 	"name": "homebridge-smartthings",
 	"description": "HomeBridge plugin for Smart Things",
-	"version": "0.5.1",
+	"version": "0.5.2",
 	"repository": {
 		"type": "git",
 		"url": "git://github.com/pdlove/homebridge-smartthings.git"
