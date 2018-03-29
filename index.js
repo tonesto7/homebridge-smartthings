@@ -107,7 +107,7 @@ SmartThingsPlatform.prototype = {
 		this.deviceLookup = [];
 		this.unknownCapabilities = [];
 		this.knownCapabilities = ["Switch", "Light", "Color Control", "Battery", "Polling", "Lock", "Refresh", "Lock Codes", "Sensor", "Actuator",
-			"Configuration", "Switch Level", "Temperature Measurement", "Motion Sensor", "Color Temperature",
+			"Configuration", "Switch Level", "Temperature Measurement", "Illuminance Measurement", "Motion Sensor", "Color Temperature",
 			"Contact Sensor", "Three Axis", "Acceleration Sensor", "Momentary", "Door Control", "Garage Door Control",
 			"Relative Humidity Measurement", "Presence Sensor", "Thermostat", "Energy Meter", "Power Meter",
 			"Thermostat Cooling Setpoint", "Thermostat Mode", "Thermostat Fan Mode", "Thermostat Operating State",
