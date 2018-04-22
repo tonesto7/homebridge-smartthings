@@ -23,7 +23,10 @@ function SmartThingsPlatform(log, config) {
 	this.app_url = config["app_url"];
 	this.app_id = config["app_id"];
 	this.access_token = config["access_token"];
+	
+	// Load device capability exclusions
     this.excludedCapabilities = config["excluded_capabilities"];
+	if (!this.excludedCapabilities) this.excludedCapabilities = [];
 
 	//This is how often it does a full refresh
 	this.polling_seconds = config["polling_seconds"];
