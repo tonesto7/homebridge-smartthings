@@ -228,7 +228,7 @@ function SmartThingsAccessory(platform, device) {
         this.deviceGroup = " button";
         
     }
-    if (device.capabilities["Switch"] !== undefined && this.deviceGroup == "unknown") {
+    if (device.capabilities["Switch"] !== undefined /*&& this.deviceGroup == "unknown"*/) {
         this.deviceGroup = "switch";
         thisCharacteristic = this.getaddService(Service.Switch).getCharacteristic(Characteristic.On)
         thisCharacteristic.on('get', function(callback) { callback(null, that.device.attributes.switch == "on"); })
@@ -272,6 +272,23 @@ function SmartThingsAccessory(platform, device) {
                     callback(null, Characteristic.CarbonMonoxideDetected.CO_LEVELS_ABNORMAL);
             });
  		that.platform.addAttributeUsage("carbonMonoxide", this.deviceid, thisCharacteristic);
+    }
+
+    if (device.capabilities["Carbon Dioxide Measurement"] !== undefined) {
+        if (this.deviceGroup == 'unknown') this.deviceGroup = "sensor";
+
+        thisCharacteristic = this.getaddService(Service.CarbonDioxideSensor).getCharacteristic(Characteristic.CarbonDioxideLevel)
+        thisCharacteristic.on('get', function(callback) { callback(null, Math.round(that.device.attributes.carbonDioxide)); });
+        that.platform.addAttributeUsage("carbonDioxide", this.deviceid, thisCharacteristic);
+
+        thisCharacteristic = this.getaddService(Service.CarbonDioxideSensor).getCharacteristic(Characteristic.CarbonDioxideDetected)
+        thisCharacteristic.on('get', function(callback) {
+            if (that.device.attributes.carbonDioxide < 800)
+                callback(null, Characteristic.CarbonDioxideDetected.CO2_LEVELS_NORMAL);
+            else
+                callback(null, Characteristic.CarbonDioxideDetected.CO2_LEVELS_ABNORMAL);
+        });
+        that.platform.addAttributeUsage("carbonDioxide", this.deviceid, thisCharacteristic);
     }
 
     if (device.capabilities["Motion Sensor"] !== undefined) {
