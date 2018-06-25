@@ -228,7 +228,7 @@ function SmartThingsAccessory(platform, device) {
         this.deviceGroup = " button";
         
     }
-    if (device.capabilities["Switch"] !== undefined && this.deviceGroup == "unknown") {
+    if (device.capabilities["Switch"] !== undefined /*&& this.deviceGroup == "unknown"*/) {
         this.deviceGroup = "switch";
         thisCharacteristic = this.getaddService(Service.Switch).getCharacteristic(Characteristic.On)
         thisCharacteristic.on('get', function(callback) { callback(null, that.device.attributes.switch == "on"); })
