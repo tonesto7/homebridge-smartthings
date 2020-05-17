@@ -33,7 +33,7 @@
             "git add"
         ]
     },
-    "homepage": "https://github.com/tonesto7/homebridge-smartthings-v2/#readme",
+    "homepage": "https://github.com/tonesto7/homebridge-smartthings/#readme",
     "keywords": [
         "homebridge-plugin",
         "smartthings",
@@ -53,14 +53,14 @@
     },
     "main": "./src/index.js",
     "license": "ISC",
-    "name": "homebridge-smartthings-v2",
+    "name": "homebridge-smartthings",
     "preferGlobal": true,
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/tonesto7/homebridge-smartthings-v2.git"
+        "url": "git+https://github.com/tonesto7/homebridge-smartthings.git"
     },
     "bugs": {
-        "url": "http://github.com/tonesto7/homebridge-smartthings-v2/issues"
+        "url": "http://github.com/tonesto7/homebridge-smartthings/issues"
     },
     "version": "2.3.4",
     "snyk": true
