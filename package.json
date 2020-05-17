@@ -1,22 +1,67 @@
 {
-	"name": "homebridge-smartthings",
-	"description": "HomeBridge plugin for Smart Things",
-	"version": "0.5.2",
-	"repository": {
-		"type": "git",
-		"url": "git://github.com/pdlove/homebridge-smartthings.git"
-	},
-	"license": "ISC",
-	"preferGlobal": true,
-	"keywords": [
-		"homebridge-plugin",
-		"sensibo"
-	],
-	"engines": {
-		"node": ">=0.12.0",
-		"homebridge": ">=0.3.1"
-	},
-	"dependencies": {
-		"pubnub": ">=4.4.0"
-	}
+    "dependencies": {
+        "axios": "^0.19.2",
+        "body-parser": "^1.19.0",
+        "chalk": "^4.0.0",
+        "compare-versions": "^3.6.0",
+        "express": "^4.17.1",
+        "hap-nodejs-community-types": "0.3.1",
+        "lodash": "^4.17.15",
+        "node-machine-id": "^1.1.12",
+        "os": "0.1.1",
+        "portfinder-sync": "^0.0.2",
+        "request": "^2.88.2",
+        "winston": "^3.2.1",
+        "winston-daily-rotate-file": "^4.4.2",
+        "snyk": "^1.321.0"
+    },
+    "devDependencies": {
+        "eslint": "^6.8.0",
+        "eslint-config-prettier": "^6.11.0",
+        "eslint-plugin-prettier": "^3.1.3",
+        "lint-staged": "^10.2.2",
+        "prettier": "^2.0.5"
+    },
+    "description": "SmartThings plugin for HomeBridge",
+    "engines": {
+        "homebridge": ">=0.4.46",
+        "node": ">=0.12.0"
+    },
+    "lint-staged": {
+        "*.js": [
+            "prettier --write",
+            "git add"
+        ]
+    },
+    "homepage": "https://github.com/tonesto7/homebridge-smartthings-v2/#readme",
+    "keywords": [
+        "homebridge-plugin",
+        "smartthings",
+        "homekit",
+        "homebridge",
+        "category_climate",
+        "category_hubs",
+        "category_lighting"
+    ],
+    "scripts": {
+        "test": "eslint .",
+        "prettier": "prettier --write src/**/*.js",
+        "freeport": "npx kill-port 8000",
+        "start": "homebridge -D -P . -U .",
+        "snyk-protect": "snyk protect",
+        "prepare": "npm run snyk-protect"
+    },
+    "main": "./src/index.js",
+    "license": "ISC",
+    "name": "homebridge-smartthings-v2",
+    "preferGlobal": true,
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/tonesto7/homebridge-smartthings-v2.git"
+    },
+    "bugs": {
+        "url": "http://github.com/tonesto7/homebridge-smartthings-v2/issues"
+    },
+    "version": "2.3.4",
+    "snyk": true
 }

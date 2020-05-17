@@ -1,0 +1,11 @@
+{
+    "appDataVer": "1.1",
+    "versions": {
+        "mainApp": "2.3.3",
+        "plugin": "2.3.4"
+    },
+    "settings": {
+        "disableSentry": true,
+        "allowLocalCmds": false
+    }
+}

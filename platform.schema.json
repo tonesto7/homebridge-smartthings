@@ -1,0 +1,146 @@
+{
+    "plugin_alias": "SmartThings-v2",
+    "schema": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "title": "Name",
+                "description": "This should default to SmartThings-v2",
+                "type": "string",
+                "default": "SmartThings-v2",
+                "required": true,
+                "readOnly": true
+            },
+            "app_url": {
+                "title": "App Url",
+                "description": "To get this information, open Homebridge (SmartThings) SmartApp in your SmartThings Classic Mobile App, and tap on 'View Configuration Data for Homebridge'",
+                "type": "string",
+                "required": true
+            },
+            "app_id": {
+                "title": "App ID",
+                "description": "To get this information, open Homebridge (SmartThings) SmartApp in your SmartThings Classic Mobile App, and tap on 'View Configuration Data for Homebridge'",
+                "type": "string",
+                "required": true
+            },
+            "access_token": {
+                "title": "App Token",
+                "description": "To get this information, open Homebridge (SmartThings) SmartApp in your SmartThings Classic Mobile App, and tap on 'View Configuration Data for Homebridge'",
+                "type": "string",
+                "required": true
+            },
+            "communityUserName": {
+                "title": "SmartThings Community Username",
+                "description": "Only need to set this when you are having issues with the plugin and you want me to be able to identify your reported exception errors.",
+                "type": "string",
+                "required": false
+            },
+            "direct_port": {
+                "title": "Direct Port",
+                "description": "This is the port that the plugin will listen on for traffic from your hub. Make sure your firewall allows incoming traffic on this port from your hub's IP address. (This is now a dynamic port selection)",
+                "type": "integer",
+                "maximum": 65535,
+                "default": 8000,
+                "required": false
+            },
+            "temperature_unit": {
+                "title": "Define Temperature Unit",
+                "type": "string",
+                "default": "F",
+                "enum": [{
+                        "text": "Fahrenheit",
+                        "value": "F"
+                    },
+                    {
+                        "text": "Celcius",
+                        "value": "C"
+                    }
+                ],
+                "required": true
+            },
+            "validateTokenId": {
+                "title": "Validate SmartApp Access Token and AppID?",
+                "description": "This will help make sure your plugin is receiving data from the correct smartapp if you have multiple instances of the SmartApp.",
+                "type": "boolean",
+                "required": false,
+                "default": false
+            },
+            "logConfig": {
+                "type": "object",
+                "properties": {
+                    "debug": {
+                        "title": "Enable Debug logging?",
+                        "description": "This will show just about every log output available.",
+                        "type": "boolean",
+                        "required": false,
+                        "default": false
+                    },
+                    "showChanges": {
+                        "title": "Show Device Events in the Logs?",
+                        "description": "This will log device event changes received by SmartThings.",
+                        "type": "boolean",
+                        "required": false,
+                        "default": true
+                    },
+                    "hideTimestamp": {
+                        "title": "Hide TimeStamp Prefix inLogs?",
+                        "description": "This will remove the prefix from all console log output.",
+                        "type": "boolean",
+                        "required": false,
+                        "default": true
+                    },
+                    "hideNamePrefix": {
+                        "title": "Hide Plugin Name Prefix in Logs?",
+                        "description": "This will remove the prefix from all console log output.",
+                        "type": "boolean",
+                        "required": false,
+                        "default": true
+                    },
+                    "file": {
+                        "type": "object",
+                        "properties": {
+                            "enabled": {
+                                "title": "Enable Logging to file",
+                                "description": "This log will be created as homebridge-smartthings-v2.log in the same folder as this config.json file.",
+                                "type": "boolean",
+                                "required": false,
+                                "default": true
+                            },
+                            "level": {
+                                "title": "Log File Output Level",
+                                "type": "string",
+                                "default": "Good",
+                                "enum": [{
+                                        "text": "Debug",
+                                        "value": "debug"
+                                    },
+                                    {
+                                        "text": "Good",
+                                        "value": "good"
+                                    },
+                                    {
+                                        "text": "Notice",
+                                        "value": "pink"
+                                    },
+                                    {
+                                        "text": "Alert",
+                                        "value": "alert"
+                                    },
+                                    {
+                                        "text": "Warnings",
+                                        "value": "warn"
+                                    },
+                                    {
+                                        "text": "Errors",
+                                        "value": "error"
+                                    }
+                                ],
+                                "required": false
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
