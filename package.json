@@ -51,7 +51,7 @@
         "snyk-protect": "snyk protect",
         "prepare": "npm run snyk-protect"
     },
-    "main": "./src/index.js",
+    "main": "index.js",
     "license": "ISC",
     "name": "homebridge-smartthings",
     "preferGlobal": true,
