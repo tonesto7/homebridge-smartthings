@@ -13,7 +13,7 @@
         "request": "^2.88.2",
         "winston": "^3.3.3",
         "winston-daily-rotate-file": "^4.5.0",
-        "snyk": "^1.379.2"
+        "snyk": "^1.380.0"
     },
     "devDependencies": {
         "eslint": "^7.7.0",
@@ -53,10 +53,7 @@
         "freeport": "npx kill-port 8000",
         "start": "homebridge -D -P . -U .",
         "snyk-protect": "snyk protect",
-        "prepare": "npm run snyk-protect",
-        "lint": "eslint './src/**/*.ts' --fix",
-        "prepublishOnly": "npm run lint",
-        "postpublish": "npm run clean"
+        "prepare": "npm run snyk-protect"
     },
     "main": "src/index.js",
     "license": "ISC",

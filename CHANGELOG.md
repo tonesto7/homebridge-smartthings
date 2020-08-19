@@ -1,4 +1,4 @@
-## v2.3.7
+## v2.3.8
 
 - [UPDATE] Updated dependencies.
 
