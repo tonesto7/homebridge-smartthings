@@ -63,6 +63,6 @@
     "bugs": {
         "url": "http://github.com/tonesto7/homebridge-smartthings/issues"
     },
-    "version": "2.3.7",
+    "version": "2.3.8",
     "snyk": true
 }
