@@ -13,10 +13,10 @@
         "request": "^2.88.2",
         "winston": "^3.3.3",
         "winston-daily-rotate-file": "^4.5.0",
-        "snyk": "^1.321.0"
+        "snyk": "^1.379.2"
     },
     "devDependencies": {
-        "eslint": "^6.8.0",
+        "eslint": "^7.7.0",
         "eslint-config-prettier": "^6.11.0",
         "eslint-plugin-prettier": "^3.1.4",
         "lint-staged": "^10.2.11",
@@ -53,16 +53,16 @@
         "freeport": "npx kill-port 8000",
         "start": "homebridge -D -P . -U .",
         "snyk-protect": "snyk protect",
-        "prepare": "npm run snyk-protect"
+        "prepare": "npm run snyk-protect",
+        "lint": "eslint './src/**/*.ts' --fix",
+        "prepublishOnly": "npm run lint",
+        "postpublish": "npm run clean"
     },
-    "main": "index.js",
+    "main": "src/index.js",
     "license": "ISC",
     "name": "homebridge-smartthings",
     "preferGlobal": true,
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/tonesto7/homebridge-smartthings.git"
-    },
+    "repository": "github:https://github.com/tonesto7/homebridge-smartthings",
     "bugs": {
         "url": "http://github.com/tonesto7/homebridge-smartthings/issues"
     },
