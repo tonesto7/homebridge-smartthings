@@ -1,18 +1,18 @@
 {
     "namespace": "tonesto7",
     "repoOwner": "tonesto7",
-    "repoName": "homebridge-smartthings",
+    "repoName": "homebridge-hubitat-tonesto7",
     "repoBranch": "master",
     "name": "Homebridge",
     "author": "Anthony S.",
     "description": "Provides the API interface between Homebridge (HomeKit) and SmartThings",
     "category": "My Apps",
-    "bannerUrl": "https://raw.githubusercontent.com/tonesto7/homebridge-smartthings/master/images/hb_tonesto7@2x.png",
-    "forumUrl": "https://community.smartthings.com/t/release-homebridge-smartthings-v2-0/",
-    "docUrl": "https://github.com/tonesto7/homebridge-smartthings/#readme",
+    "bannerUrl": "https://raw.githubusercontent.com/tonesto7/homebridge-hubitat-tonesto7/master/images/hb_tonesto7@2x.png",
+    "forumUrl": "",
+    "docUrl": "https://github.com/tonesto7/homebridge-hubitat-tonesto7/#readme",
     "releaseType": "production",
     "keywords": [
-        "smartthings",
+        "Hubitat",
         "homekit",
         "homebridge"
     ],
@@ -20,7 +20,7 @@
     "smartApps": {
         "parent": {
             "name": "Homebridge",
-            "iconUrl": "https://raw.githubusercontent.com/tonesto7/homebridge-smartthings/master/images/hb_tonesto7@2x.png",
+            "iconUrl": "https://raw.githubusercontent.com/tonesto7/homebridge-hubitat-tonesto7/master/images/hb_tonesto7@2x.png",
             "published": true,
             "oAuth": true,
             "version": "2.3.4",

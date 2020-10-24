@@ -1,43 +1,43 @@
 {
-    "pluginAlias": "SmartThings-v2",
+    "pluginAlias": "Hubitat-v2",
     "pluginType": "platform",
     "singular": true,
-    "footerDisplay": "If you need help or have issues visit: [issues](https://github.com/tonesto7/homebridge-smartthings-v2/issues)",
+    "footerDisplay": "If you need help or have issues visit: [issues](https://github.com/tonesto7/homebridge-Hubitat-tonesto7/issues)",
     "schema": {
         "name": {
             "title": "Name",
-            "description": "This should default to SmartThings-v2",
+            "description": "This should default to Hubitat-v2",
             "type": "string",
-            "default": "SmartThings-v2",
+            "default": "Hubitat-v2",
             "required": true
         },
         "app_url": {
             "title": "App Url",
-            "description": "To get this information, open Homebridge (SmartThings) SmartApp in your SmartThings Classic Mobile App, and tap on 'View Configuration Data for Homebridge'",
+            "description": "To get this information, open Homebridge (Hubitat) App, and tap on 'View Configuration Data for Homebridge'",
             "type": "string",
             "required": true
         },
         "app_id": {
             "title": "App ID",
-            "description": "To get this information, open Homebridge (SmartThings) SmartApp in your SmartThings Classic Mobile App, and tap on 'View Configuration Data for Homebridge'",
+            "description": "To get this information, open Homebridge (Hubitat) App, and tap on 'View Configuration Data for Homebridge'",
             "type": "string",
             "required": true
         },
         "access_token": {
             "title": "App Token",
-            "description": "To get this information, open Homebridge (SmartThings) SmartApp in your SmartThings Classic Mobile App, and tap on 'View Configuration Data for Homebridge'",
+            "description": "To get this information, open Homebridge (Hubitat) App, and tap on 'View Configuration Data for Homebridge'",
             "type": "string",
             "required": true
         },
         "communityUserName": {
-            "title": "SmartThings Community Username",
+            "title": "Hubitat Community Username",
             "description": "Only need to set this when you are having issues with the plugin and you want me to be able to identify your reported exception errors.",
             "type": "string",
             "required": false
         },
         "direct_ip": {
             "title": "Direct IP",
-            "description": "Most installations won't need this, but if for any reason it can't identify your ip address correctly, use this setting to force the IP presented to SmartThings for the hub to send to.",
+            "description": "Most installations won't need this, but if for any reason it can't identify your ip address correctly, use this setting to force the IP presented to Hubitat for the hub to send to.",
             "type": "string",
             "required": false
         },
@@ -86,7 +86,7 @@
                 },
                 "showChanges": {
                     "title": "Show Device Events in the Logs?",
-                    "description": "This will log device event changes received by SmartThings.",
+                    "description": "This will log device event changes received by Hubitat.",
                     "type": "boolean",
                     "required": false,
                     "default": true
@@ -110,7 +110,7 @@
                     "properties": {
                         "enabled": {
                             "title": "Enable Logging to file",
-                            "description": "This log will be created as homebridge-smartthings-v2.log in the same folder as this config.json file.",
+                            "description": "This log will be created as homebridge-hubitat-v2.log in the same folder as this config.json file.",
                             "type": "boolean",
                             "required": false,
                             "default": true

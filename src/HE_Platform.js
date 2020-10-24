@@ -1,8 +1,8 @@
 const { pluginName, platformName, platformDesc, pluginVersion } = require("./libs/Constants"),
     events = require("events"),
     myUtils = require("./libs/MyUtils"),
-    SmartThingsClient = require("./HE_Client"),
-    SmartThingsAccessories = require("./HE_Accessories"),
+    HEClient = require("./HE_Client"),
+    HEAccessories = require("./HE_Accessories"),
     express = require("express"),
     bodyParser = require("body-parser"),
     chalk = require("chalk"),
@@ -21,7 +21,7 @@ module.exports = class HE_Platform {
         this.Characteristic = api.hap.Characteristic;
         PlatformAccessory = api.platformAccessory;
         this.uuid = api.hap.uuid;
-        if (config === undefined || config === null || config.app_url === undefined || config.app_url === null || config.app_id === undefined || config.app_id === null) {
+        if (config === undefined || config === null || config.app_url_local === undefined || config.app_url_local === null || config.app_url_cloud === undefined || config.app_url_cloud === null || config.app_id === undefined || config.app_id === null) {
             log(`${platformName} Plugin is not Configured | Skipping...`);
             return;
         }
@@ -43,8 +43,8 @@ module.exports = class HE_Platform {
         this.myUtils = new myUtils(this);
         this.configItems = this.getConfigItems();
         this.unknownCapabilities = [];
-        this.client = new SmartThingsClient(this);
-        this.SmartThingsAccessories = new SmartThingsAccessories(this);
+        this.client = new HEClient(this);
+        this.HEAccessories = new HEAccessories(this);
         this.homebridge.on("didFinishLaunching", this.didFinishLaunching.bind(this));
         this.appEvts.emit("event:plugin_upd_status");
     }
@@ -78,9 +78,12 @@ module.exports = class HE_Platform {
 
     getConfigItems() {
         return {
-            app_url: this.config.app_url,
+            app_url_local: this.config.app_url_local,
+            app_url_cloud: this.config.app_url_cloud,
             app_id: this.config.app_id,
             access_token: this.config.access_token,
+            use_cloud: this.config.use_cloud === true,
+            app_platform: this.config.app_platform,
             update_seconds: this.config.update_seconds || 30,
             direct_port: this.direct_port,
             direct_ip: this.config.direct_ip || this.myUtils.getIPAddress(),
@@ -139,9 +142,9 @@ module.exports = class HE_Platform {
                         }
                         if (resp && resp.deviceList && resp.deviceList instanceof Array) {
                             // that.log.debug("Received All Device Data");
-                            const toCreate = this.SmartThingsAccessories.diffAdd(resp.deviceList);
-                            const toUpdate = this.SmartThingsAccessories.intersection(resp.deviceList);
-                            const toRemove = this.SmartThingsAccessories.diffRemove(resp.deviceList);
+                            const toCreate = this.HEAccessories.diffAdd(resp.deviceList);
+                            const toUpdate = this.HEAccessories.intersection(resp.deviceList);
+                            const toRemove = this.HEAccessories.diffRemove(resp.deviceList);
                             that.log.warn(
                                 `Devices to Remove: (${Object.keys(toRemove).length})`,
                                 toRemove.map((i) => i.name),
@@ -158,7 +161,7 @@ module.exports = class HE_Platform {
                         }
                         that.log.alert(`Total Initialization Time: (${Math.round((new Date() - starttime) / 1000)} seconds)`);
                         that.log.notice(`Unknown Capabilities: ${JSON.stringify(that.unknownCapabilities)}`);
-                        that.log.info(`${platformDesc} DeviceCache Size: (${Object.keys(this.SmartThingsAccessories.getAllAccessoriesFromCache()).length})`);
+                        that.log.info(`${platformDesc} DeviceCache Size: (${Object.keys(this.HEAccessories.getAllAccessoriesFromCache()).length})`);
                         if (src !== "First Launch") this.appEvts.emit("event:plugin_upd_status");
                         resolve(true);
                     });
@@ -172,7 +175,7 @@ module.exports = class HE_Platform {
     getNewAccessory(device, UUID) {
         let accessory = new PlatformAccessory(device.name, UUID);
         accessory.context.deviceData = device;
-        this.SmartThingsAccessories.initializeAccessory(accessory);
+        this.HEAccessories.initializeAccessory(accessory);
         return accessory;
     }
 
@@ -183,21 +186,21 @@ module.exports = class HE_Platform {
         this.log.debug(`Initializing New Device (${device.name} | ${device.deviceid})`);
         accessory = this.getNewAccessory(device, new_uuid);
         this.homebridge.registerPlatformAccessories(pluginName, platformName, [accessory]);
-        this.SmartThingsAccessories.addAccessoryToCache(accessory);
+        this.HEAccessories.addAccessoryToCache(accessory);
         this.log.info(`Added Device: (${accessory.name} | ${accessory.deviceid})`);
     }
 
     updateDevice(device) {
-        let cachedAccessory = this.SmartThingsAccessories.getAccessoryFromCache(device);
+        let cachedAccessory = this.HEAccessories.getAccessoryFromCache(device);
         device.excludedCapabilities = this.excludedCapabilities[device.deviceid] || [];
         cachedAccessory.context.deviceData = device;
         this.log.debug(`Loading Existing Device (${device.name}) | (${device.deviceid})`);
-        cachedAccessory = this.SmartThingsAccessories.initializeAccessory(cachedAccessory);
-        this.SmartThingsAccessories.addAccessoryToCache(cachedAccessory);
+        cachedAccessory = this.HEAccessories.initializeAccessory(cachedAccessory);
+        this.HEAccessories.addAccessoryToCache(cachedAccessory);
     }
 
     removeAccessory(accessory) {
-        if (this.SmartThingsAccessories.removeAccessoryFromCache(accessory)) {
+        if (this.HEAccessories.removeAccessoryFromCache(accessory)) {
             this.homebridge.unregisterPlatformAccessories(pluginName, platformName, [accessory]);
             this.log.info(`Removed: ${accessory.context.name} (${accessory.context.deviceid})`);
         }
@@ -206,8 +209,8 @@ module.exports = class HE_Platform {
     configureAccessory(accessory) {
         if (!this.ok2Run) return;
         this.log.debug(`Configure Cached Accessory: ${accessory.displayName}, UUID: ${accessory.UUID}`);
-        let cachedAccessory = this.SmartThingsAccessories.initializeAccessory(accessory, true);
-        this.SmartThingsAccessories.addAccessoryToCache(cachedAccessory);
+        let cachedAccessory = this.HEAccessories.initializeAccessory(accessory, true);
+        this.HEAccessories.addAccessoryToCache(cachedAccessory);
     }
 
     processIncrementalUpdate(data, that) {
@@ -274,7 +277,7 @@ module.exports = class HE_Platform {
                 webApp.get("/debugOpts", (req, res) => {
                     that.log.info(`${platformName} Debug Option Request(${req.query.option})...`);
                     if (req.query && req.query.option) {
-                        let accs = this.SmartThingsAccessories.getAllAccessoriesFromCache();
+                        let accs = this.HEAccessories.getAllAccessoriesFromCache();
                         // let accsKeys = Object.keys(accs);
                         // console.log(accsKeys);
                         switch (req.query.option) {
@@ -375,7 +378,7 @@ module.exports = class HE_Platform {
                                 data: body.change_data,
                                 date: body.change_date,
                             };
-                            that.SmartThingsAccessories.processDeviceAttributeUpdate(newChange).then((resp) => {
+                            that.HEAccessories.processDeviceAttributeUpdate(newChange).then((resp) => {
                                 if (that.logConfig.showChanges) {
                                     that.log.info(chalk `[{keyword('orange') Device Event}]: ({blueBright ${body.change_name}}) [{yellow.bold ${body.change_attribute ? body.change_attribute.toUpperCase() : "unknown"}}] is {keyword('pink') ${body.change_value}}`);
                                 }

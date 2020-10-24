@@ -1,9 +1,6 @@
-const {
-    pluginName,
-    platformName
-} = require("./libs/Constants"),
-    StPlatform = require("./ST_Platform");
+const { pluginName, platformName } = require("./libs/Constants"),
+    hePlatform = require("./HE_Platform");
 
 module.exports = (homebridge) => {
-    homebridge.registerPlatform(pluginName, platformName, StPlatform, true);
+    homebridge.registerPlatform(pluginName, platformName, hePlatform, true);
 };

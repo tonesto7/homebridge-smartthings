@@ -1,0 +1,19 @@
+{
+    "keep": {
+        "days": false,
+        "amount": 5
+    },
+    "auditLog": "C:\\Users\\asantilli\\Documents\\GitHub\\homebridge-hubitat-tonesto7/homebridge-hubitat-tonesto7-logaudit.json",
+    "files": [
+        {
+            "date": 1603400808256,
+            "name": "C:\\Users\\asantilli\\Documents\\GitHub\\homebridge-hubitat-tonesto7\\homebridge-hubitat-tonesto7-2020-10-22.log",
+            "hash": "ac57e5af4625f173e59eb08e62d28bfa"
+        },
+        {
+            "date": 1603428101697,
+            "name": "C:\\Users\\asantilli\\Documents\\GitHub\\homebridge-hubitat-tonesto7\\homebridge-hubitat-tonesto7-2020-10-23.log",
+            "hash": "84b9e0bcdbb02dce223264c203fc2c1e"
+        }
+    ]
+}

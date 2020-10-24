@@ -1,10 +1,11 @@
-const {
-    platformName,
-    platformDesc,
-    pluginVersion
-} = require("./libs/Constants"),
-    axios = require('axios').default,
+const { platformName, platformDesc, pluginVersion } = require("./libs/Constants"),
+    axios = require("axios").default,
     url = require("url");
+// WSServer = require('ws').Server,
+// WebSocket = require('ws'),
+// server = require('http').createServer(),
+// AU = require('ansi_up'),
+// ansi_up = new AU.default;
 
 module.exports = class ST_Client {
     constructor(platform) {
@@ -14,14 +15,12 @@ module.exports = class ST_Client {
         this.useLocal = false; //platform.local_commands;
         this.hubIp = platform.local_hub_ip;
         this.configItems = platform.getConfigItems();
-        let appURL = url.parse(this.configItems.app_url);
-        this.urlItems = {
-            app_host: appURL.hostname || "graph.api.smartthings.com",
-            app_port: appURL.port || 443,
-            app_path: `${(appURL.path || "/api/smartapps/installations/")}${this.configItems.app_id}/`
-        };
+        // let appURL = url.parse(this.configItems.app_url);
         this.localErrCnt = 0;
         this.localDisabled = false;
+        this.clientsLogSocket = [];
+        this.clientsEventSocket = [];
+        this.communciationBreakCommand = "off";
         this.registerEvtListeners();
     }
 
@@ -38,7 +37,7 @@ module.exports = class ST_Client {
     }
 
     sendAsLocalCmd() {
-        return (this.useLocal === true && this.hubIp !== undefined);
+        return this.useLocal === true && this.hubIp !== undefined;
     }
 
     localHubErr(hasErr) {
@@ -73,9 +72,9 @@ module.exports = class ST_Client {
                 this.log.error(`${src} Error | SmartThings Authentication Error: ${err.response} | Message: ${err.message}`);
                 break;
             default:
-                if (err.message.startsWith('getaddrinfo EAI_AGAIN')) {
+                if (err.message.startsWith("getaddrinfo EAI_AGAIN")) {
                     this.log.error(`${src} Error | Possible Internet/Network/DNS Error | Unable to reach the uri | Message ${err.message}`);
-                } else if (allowLocal && err.message.startsWith('Error: connect ETIMEDOUT ')) {
+                } else if (allowLocal && err.message.startsWith("Error: connect ETIMEDOUT ")) {
                     this.localHubErr(true);
                 } else {
                     // console.error(err);
@@ -88,19 +87,20 @@ module.exports = class ST_Client {
     getDevices() {
         let that = this;
         return new Promise((resolve) => {
+            console.log(`${that.configItems.use_cloud ? that.configItems.app_url_cloud : that.configItems.app_url_local}${that.configItems.app_id}/devices`);
             axios({
-                    method: 'get',
-                    url: `${that.configItems.app_url}${that.configItems.app_id}/devices`,
+                    method: "get",
+                    url: `${that.configItems.use_cloud ? that.configItems.app_url_cloud : that.configItems.app_url_local}${that.configItems.app_id}/devices`,
                     params: {
-                        access_token: that.configItems.access_token
+                        access_token: that.configItems.access_token,
                     },
-                    timeout: 10000
+                    timeout: 10000,
                 })
                 .then((response) => {
                     resolve(response.data);
                 })
                 .catch((err) => {
-                    this.handleError('getDevices', err);
+                    this.handleError("getDevices", err);
                     resolve(undefined);
                 });
         });
@@ -110,18 +110,18 @@ module.exports = class ST_Client {
         let that = this;
         return new Promise((resolve) => {
             axios({
-                    method: 'get',
-                    url: `${that.configItems.app_url}${that.configItems.app_id}/${deviceid}/query`,
+                    method: "get",
+                    url: `${that.configItems.use_cloud ? that.configItems.app_url_cloud : that.configItems.app_url_local}${that.configItems.app_id}/${deviceid}/query`,
                     params: {
-                        access_token: that.configItems.access_token
+                        access_token: that.configItems.access_token,
                     },
-                    timeout: 10000
+                    timeout: 10000,
                 })
                 .then((response) => {
                     resolve(response.data);
                 })
                 .catch((err) => {
-                    this.handleError('getDevice', err);
+                    this.handleError("getDevice", err);
                     resolve(undefined);
                 });
         });
@@ -132,32 +132,32 @@ module.exports = class ST_Client {
             let that = this;
             let sendLocal = this.sendAsLocalCmd();
             let config = {
-                method: 'post',
-                url: `${this.configItems.app_url}${this.configItems.app_id}/${devData.deviceid}/command/${cmd}`,
+                method: "post",
+                url: `${this.configItems.use_cloud ? this.configItems.app_url_cloud : this.configItems.app_url_local}${this.configItems.app_id}/${devData.deviceid}/command/${cmd}`,
                 params: {
-                    access_token: this.configItems.access_token
+                    access_token: this.configItems.access_token,
                 },
                 headers: {
                     evtsource: `Homebridge_${platformName}_${this.configItems.app_id}`,
-                    evttype: 'hkCommand'
+                    evttype: "hkCommand",
                 },
                 data: vals,
-                timeout: 5000
+                timeout: 5000,
             };
-            if (sendLocal) {
-                config.url = `http://${this.hubIp}:39500/event`;
-                delete config.params;
-                config.data = {
-                    deviceid: devData.deviceid,
-                    command: cmd,
-                    values: vals,
-                    evtsource: `Homebridge_${platformName}_${this.configItems.app_id}`,
-                    evttype: 'hkCommand'
-                };
-            }
+            // if (sendLocal) {
+            //     config.url = `http://${this.hubIp}:39500/event`;
+            //     delete config.params;
+            //     config.data = {
+            //         deviceid: devData.deviceid,
+            //         command: cmd,
+            //         values: vals,
+            //         evtsource: `Homebridge_${platformName}_${this.configItems.app_id}`,
+            //         evttype: "hkCommand",
+            //     };
+            // }
 
             try {
-                that.log.notice(`Sending Device Command: ${cmd}${vals ? ' | Value: ' + JSON.stringify(vals) : ''} | Name: (${devData.name}) | DeviceID: (${devData.deviceid}) | SendToLocalHub: (${sendLocal})`);
+                that.log.notice(`Sending Device Command: ${cmd}${vals ? " | Value: " + JSON.stringify(vals) : ""} | Name: (${devData.name}) | DeviceID: (${devData.deviceid}) | SendToLocalHub: (${sendLocal})`);
                 axios(config)
                     .then((response) => {
                         // console.log('command response:', response.data);
@@ -166,7 +166,7 @@ module.exports = class ST_Client {
                         resolve(true);
                     })
                     .catch((err) => {
-                        that.handleError('sendDeviceCommand', err, true);
+                        that.handleError("sendDeviceCommand", err, true);
                         resolve(false);
                     });
             } catch (err) {
@@ -177,36 +177,35 @@ module.exports = class ST_Client {
 
     sendUpdateStatus() {
         return new Promise((resolve) => {
-            this.platform.myUtils.checkVersion()
-                .then((res) => {
-                    this.log.notice(`Sending Plugin Status to SmartThings | UpdateAvailable: ${res.hasUpdate}${res.newVersion ?  ' | newVersion: ' + res.newVersion : ''}`);
-                    axios({
-                            method: 'post',
-                            url: `${this.configItems.app_url}${this.configItems.app_id}/pluginStatus`,
-                            params: {
-                                access_token: this.configItems.access_token
-                            },
-                            data: {
-                                hasUpdate: res.hasUpdate,
-                                newVersion: res.newVersion,
-                                version: pluginVersion
-                            },
-                            timeout: 10000
-                        })
-                        .then((response) => {
-                            // console.log(response.data);
-                            if (response.data) {
-                                this.log.debug(`sendUpdateStatus Resp: ${JSON.stringify(response.data)}`);
-                                resolve(response.data);
-                            } else {
-                                resolve(null);
-                            }
-                        })
-                        .catch((err) => {
-                            this.handleError('sendUpdateStatus', err, true);
-                            resolve(undefined);
-                        });
-                });
+            this.platform.myUtils.checkVersion().then((res) => {
+                this.log.notice(`Sending Plugin Status to SmartThings | UpdateAvailable: ${res.hasUpdate}${res.newVersion ? " | newVersion: " + res.newVersion : ""}`);
+                axios({
+                        method: "post",
+                        url: `${this.configItems.use_cloud ? this.configItems.app_url_cloud : this.configItems.app_url_local}${this.configItems.app_id}/pluginStatus`,
+                        params: {
+                            access_token: this.configItems.access_token,
+                        },
+                        data: {
+                            hasUpdate: res.hasUpdate,
+                            newVersion: res.newVersion,
+                            version: pluginVersion,
+                        },
+                        timeout: 10000,
+                    })
+                    .then((response) => {
+                        // console.log(response.data);
+                        if (response.data) {
+                            this.log.debug(`sendUpdateStatus Resp: ${JSON.stringify(response.data)}`);
+                            resolve(response.data);
+                        } else {
+                            resolve(null);
+                        }
+                    })
+                    .catch((err) => {
+                        this.handleError("sendUpdateStatus", err, true);
+                        resolve(undefined);
+                    });
+            });
         });
     }
 
@@ -215,23 +214,23 @@ module.exports = class ST_Client {
         return new Promise((resolve) => {
             let sendLocal = this.sendAsLocalCmd();
             let config = {
-                method: 'post',
-                url: `${this.configItems.app_url}${this.configItems.app_id}/startDirect/${this.configItems.direct_ip}/${this.configItems.direct_port}/${pluginVersion}`,
+                method: "post",
+                url: `${this.configItems.use_cloud ? this.configItems.app_url_cloud : this.configItems.app_url_local}${this.configItems.app_id}/startDirect/${this.configItems.direct_ip}/${this.configItems.direct_port}/${pluginVersion}`,
                 params: {
-                    access_token: this.configItems.access_token
+                    access_token: this.configItems.access_token,
                 },
                 headers: {
                     evtsource: `Homebridge_${platformName}_${this.configItems.app_id}`,
-                    evttype: 'enableDirect'
+                    evttype: "enableDirect",
                 },
                 data: {
                     ip: that.configItems.direct_ip,
                     port: that.configItems.direct_port,
                     version: pluginVersion,
                     evtsource: `Homebridge_${platformName}_${this.configItems.app_id}`,
-                    evttype: 'enableDirect'
+                    evttype: "enableDirect",
                 },
-                timeout: 10000
+                timeout: 10000,
             };
             if (sendLocal) {
                 config.url = `http://${this.hubIp}:39500/event`;
@@ -259,4 +258,19 @@ module.exports = class ST_Client {
             }
         });
     }
+
+    // webSocketInit() {
+    //     // Create web socket server on top of a regular http server
+    //     this.wssLogSocket = new WSServer({ noServer: true });
+    //     this.wssEventSocket = new WSServer({ noServer: true });
+
+    //     let parsed = URL.parse(platform.app_url)
+    //     let url = '';
+    //     if (parsed.port !== null && parsed.port !== undefined)
+    //         url = `ws://${parsed.hostname}:${parsed.port}/eventsocket`;
+    //     else
+    //         url = `ws://${parsed.hostname}/eventsocket`;
+    //     let ws = new WebSocket(url, { perMessageDeflate: false });
+    //     this.platform.log('attempt connection to ' + url);
+    // }
 };

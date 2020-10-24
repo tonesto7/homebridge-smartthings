@@ -1,7 +1,7 @@
 module.exports = {
-    pluginName: "homebridge-smartthings",
-    platformDesc: "SmartThings",
-    platformName: "SmartThings-v2",
+    pluginName: "homebridge-hubitat-tonesto7",
+    platformDesc: "Hubitat",
+    platformName: "Hubitat-v2",
     pluginVersion: require("../../package.json").version,
     packageFile: require("../../package.json"),
     knownCapabilities: [
@@ -61,6 +61,6 @@ module.exports = {
         "Button",
         // Sonos Capabilities
         "Audio Volume",
-        "Audio Mute"
-    ]
+        "Audio Mute",
+    ],
 };
