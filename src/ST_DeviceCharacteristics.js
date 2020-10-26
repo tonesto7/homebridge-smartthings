@@ -266,7 +266,7 @@ module.exports = class DeviceCharacteristics {
             _accessory.getOrAddService(_service).removeCharacteristic(Characteristic.Active);
         }
         let spdSteps = 1;
-        if (_accessory.hasDeviceFlag('fan_3_spd')) spdSteps = 33;
+        if (_accessory.hasDeviceFlag('fan_3_spd')) spdSteps = 32;
         if (_accessory.hasDeviceFlag('fan_4_spd')) spdSteps = 25;
         let spdAttr = (_accessory.hasAttribute('level')) ? "level" : (_accessory.hasAttribute('fanSpeed') && _accessory.hasCommand('setFanSpeed')) ? 'fanSpeed' : undefined;
         if (_accessory.hasAttribute('level') || _accessory.hasAttribute('fanSpeed')) {
