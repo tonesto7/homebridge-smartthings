@@ -2,7 +2,7 @@
     "pluginAlias": "SmartThings-v2",
     "pluginType": "platform",
     "singular": true,
-    "footerDisplay": "If you need help or have issues visit: [issues](https://github.com/tonesto7/homebridge-smartthings-v2/issues)",
+    "footerDisplay": "If you need help or have issues visit: [issues](https://github.com/tonesto7/homebridge-smartthings/issues)",
     "schema": {
         "name": {
             "title": "Name",
